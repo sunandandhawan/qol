@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="theme-color" content="#2196f3"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Finder</title>
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <h2>Search Employee</h2>
+  <input id="nameInput" placeholder="Enter name">
+  <button onclick="search()">Search</button>
+  <pre id="output"></pre>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/XYZ/exec"; // Replace with your script URL
+
+    function search() {
+      const name = document.getElementById('nameInput').value;
+      fetch(`${API_URL}?name=${encodeURIComponent(name)}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('output').textContent = data.error || `Name: ${data.name}\nEmail: ${data.email}`;
+        })
+        .catch(err => {
+          document.getElementById('output').textContent = "Error: " + err;
+        });
+    }
+
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
+</body>
+</html>
