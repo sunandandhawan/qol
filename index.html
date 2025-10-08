@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#666666">
     <meta name="description" content="Gamify your life with tasks, XP, levels, and rewards">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -527,6 +527,18 @@
             gap: 10px;
         }
 
+        .datetime-display {
+            text-align: center;
+            padding: 10px;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 5px;
+        }
+
         /* ===== Add Button Aligned Right ===== */
         .add-btn-container {
             display: flex;
@@ -610,6 +622,11 @@
         <div id="day-view" class="screen active">
             <button class="floating-add-btn" onclick="openTaskModal()">+</button>
 
+            <!-- Date and Time Display -->
+            <div id="datetime-display" class="datetime-display">
+                00:00, Mon, Jan 1, 2025
+            </div>
+
             <div id="tasks-container"></div>
 
             <!-- Completed Tasks Collapsible -->
@@ -643,9 +660,12 @@
             </div>
 
             <!-- Level Progress -->
-            <h3>Level Progress</h3>
+            <div class="category-header">
+                <h3>Level Progress</h3>
+                <span id="level-progress-text" style="margin-top: 18px;">0 / 100 XP</span>
+            </div>
             <div class="progress-bar">
-                <div class="progress-fill" id="level-progress" style="width: 0%">0 / 100</div>
+                <div class="progress-fill" id="level-progress" style="width: 0%"></div>
             </div>
 
             <!-- Category Progress -->
@@ -845,7 +865,26 @@
             registerServiceWorker();
 
             // Setup fullscreen on any interaction
-            setupFullscreen()
+            setupFullscreen();
+            
+            // Update date and time
+            updateDateTime();
+            setInterval(updateDateTime, 1000); // Update every second
+        }
+
+        // ===== DATE TIME =====
+        function updateDateTime() {
+            const now = new Date();
+            
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thurs', 'Fri', 'Sat'];
+            const dayStr = days[now.getDay()];
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const dateStr = `${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+            
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('datetime-display').textContent = `${hours}:${minutes}, ${dayStr}, ${dateStr}`;
         }
 
         function setupFullscreen() {
@@ -1330,7 +1369,9 @@
             
             const levelProgress = document.getElementById('level-progress');
             levelProgress.style.width = progress + '%';
-            levelProgress.textContent = `${xpInCurrentLevel} / ${xpNeededForLevel}`;
+            
+            const levelProgressText = document.getElementById('level-progress-text');
+            levelProgressText.textContent = `${xpInCurrentLevel} / ${xpNeededForLevel} XP`;
             
             // Category progress
             const categoryContainer = document.getElementById('category-progress-container');
