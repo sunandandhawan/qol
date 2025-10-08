@@ -843,6 +843,14 @@
             
             // Register service worker
             registerServiceWorker();
+
+            // Setup fullscreen on any interaction
+            setupFullscreen()
+        }
+
+        function setupFullscreen() {
+            window.onclick = () => document.body.requestFullscreen().catch(() => {});
+            window.ontouchstart = () => document.body.requestFullscreen().catch(() => {});
         }
 
         // ===== LOCAL STORAGE =====
