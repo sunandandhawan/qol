@@ -1765,39 +1765,8 @@
         // ===== SERVICE WORKER =====
         function registerServiceWorker() {
             if ('serviceWorker' in navigator) {
-                // Inline service worker
-                const swCode = `
-                    const CACHE_NAME = 'qol-v1';
-                    
-                    self.addEventListener('install', (event) => {
-                        self.skipWaiting();
-                    });
-                    
-                    self.addEventListener('activate', (event) => {
-                        event.waitUntil(clients.claim());
-                    });
-                    
-                    self.addEventListener('fetch', (event) => {
-                        event.respondWith(
-                            caches.match(event.request).then((response) => {
-                                return response || fetch(event.request).then((fetchResponse) => {
-                                    return caches.open(CACHE_NAME).then((cache) => {
-                                        cache.put(event.request, fetchResponse.clone());
-                                        return fetchResponse;
-                                    });
-                                });
-                            }).catch(() => {
-                                return caches.match(event.request);
-                            })
-                        );
-                    });
-                `;
-                
-                const blob = new Blob([swCode], { type: 'application/javascript' });
-                const swUrl = URL.createObjectURL(blob);
-                
-                navigator.serviceWorker.register(swUrl).then(() => {
-                    console.log('Service Worker registered');
+                navigator.serviceWorker.register('./sw.js').then((registration) => {
+                    console.log('Service Worker registered successfully:', registration);
                 }).catch((error) => {
                     console.log('Service Worker registration failed:', error);
                 });
