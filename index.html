@@ -1,37 +1,1762 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="theme-color" content="#2196f3"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Employee Finder</title>
-  <link rel="manifest" href="manifest.json">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#666666">
+    <meta name="description" content="Gamify your life with tasks, XP, levels, and rewards">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="QOL">
+    <title>Quest of Life</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+    <link rel="apple-touch-icon" href="./icon-192.svg">
+    <link rel="manifest" href="./manifest.json">
+    <style>
+        /* ===== Global Styles ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --accent-color: #666666;
+            --bg-color: #000000;
+            --text-color: #e0e0e0;
+            --text-light: #999999;
+            --border-color: #1a1a1a;
+            --hover-bg: #1a1a1a;
+            --card-bg: #0a0a0a;
+            --success-color: #888888;
+            --danger-color: #555555;
+            --warning-color: #777777;
+            --shadow: 0 2px 8px rgba(255,255,255,0.05);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        /* ===== Container & Layout ===== */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 120px !important; /* Space for bottom navigation */
+        }
+
+        /* ===== Navigation ===== */
+        nav {
+            background: var(--bg-color);
+            border-top: 2px solid var(--border-color);
+            padding: 15px 0;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        nav button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background: transparent;
+            color: var(--text-color);
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        nav button:hover {
+            background: var(--hover-bg);
+        }
+
+        nav button.active {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        /* ===== Screen Management ===== */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* ===== Typography ===== */
+        h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        /* ===== Buttons ===== */
+        button, .btn {
+            padding: 12px 20px;
+            font-size: 16px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        button:hover, .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        button:active, .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--text-light);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        /* ===== Forms ===== */
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-family: inherit;
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        select option {
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        /* ===== Task Item ===== */
+        .task-item {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: move;
+            transition: all 0.2s;
+        }
+
+        .task-item:hover {
+            box-shadow: var(--shadow);
+        }
+
+        .task-item.dragging {
+            opacity: 0.5;
+        }
+
+        .task-item.completed {
+            opacity: 0.6;
+            background: var(--hover-bg);
+        }
+
+        .task-header {
+            margin-bottom: 10px;
+        }
+
+        .task-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+            float: right;
+            margin-left: 12px;
+            margin-bottom: 8px;
+        }
+
+        .task-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 14px;
+            color: var(--text-light);
+            clear: both;
+            margin-top: 20px;
+        }
+
+        .task-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: var(--hover-bg);
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .category-badge {
+            background: #333333;
+            color: #e0e0e0;
+            border: 1px solid #555555;
+        }
+
+        /* ===== Progress Bars ===== */
+        .progress-bar {
+            width: 100%;
+            height: 24px;
+            background: var(--hover-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #444444, #666666);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e0e0e0;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* ===== Stats Grid ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #cccccc;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-top: 5px;
+        }
+
+        /* ===== Category Progress ===== */
+        .category-progress {
+            margin-bottom: 20px;
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        /* ===== Badges Grid ===== */
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .badge-item {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .badge-icon {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+
+        .badge-name {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .badge-desc {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        /* ===== Rewards ===== */
+        .reward-item {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .reward-info {
+            flex: 1;
+        }
+
+        .reward-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .reward-cost {
+            font-size: 16px;
+            color: #999999;
+            font-weight: 600;
+        }
+
+        /* ===== Collapsible Section ===== */
+        .collapsible {
+            margin-top: 30px;
+        }
+
+        .collapsible-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: var(--hover-bg);
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .collapsible-header:hover {
+            background: var(--border-color);
+        }
+
+        .collapsible-content {
+            display: none;
+        }
+
+        .collapsible-content.open {
+            display: block;
+        }
+
+        /* ===== Modal ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: var(--bg-color);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            color: var(--text-color);
+            font-size: 24px;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ===== Empty State ===== */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 26px;
+            }
+
+            h2 {
+                font-size: 22px;
+            }
+
+            nav button {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* ===== Utility Classes ===== */
+        .mb-20 {
+            margin-bottom: 20px;
+        }
+
+        .mt-20 {
+            margin-top: 20px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .gap-10 {
+            gap: 10px;
+        }
+
+        /* ===== Add Button Aligned Right ===== */
+        .add-btn-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .add-btn-right {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            font-size: 32px;
+            line-height: 1;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(255,255,255,0.15);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .add-btn-right:hover {
+            transform: scale(1.1) translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255,255,255,0.2);
+        }
+
+        .add-btn-right:active {
+            transform: scale(1.05) translateY(0);
+        }
+
+        /* ===== Floating Add Button ===== */
+        .floating-add-btn {
+            position: fixed;
+            right: 20px;
+            bottom: 90px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            font-size: 32px;
+            line-height: 1;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(255,255,255,0.15);
+            z-index: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .floating-add-btn:hover {
+            transform: scale(1.1) translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255,255,255,0.2);
+        }
+
+        .floating-add-btn:active {
+            transform: scale(1.05) translateY(0);
+        }
+    </style>
 </head>
 <body>
-  <h2>Search Employee</h2>
-  <input id="nameInput" placeholder="Enter name">
-  <button onclick="search()">Search</button>
-  <pre id="output"></pre>
+    <!-- Navigation -->
+    <nav>
+        <ul>
+            <li><button class="nav-btn active" data-screen="day-view">Today</button></li>
+            <li><button class="nav-btn" data-screen="dashboard">Dashboard</button></li>
+            <li><button class="nav-btn" data-screen="rewards">Rewards</button></li>
+            <li><button class="nav-btn" data-screen="settings">Settings</button></li>
+        </ul>
+    </nav>
 
-  <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxLZjZiG3d860QxRuFnZsGBbymxWfjiu3Npm6zWF7hrekOYxfdrrIU3ondSg13v_06e/exec";
+    <div class="container">
+        <!-- ===== DAY VIEW SCREEN ===== -->
+        <div id="day-view" class="screen active">
+            <button class="floating-add-btn" onclick="openTaskModal()">+</button>
 
-    function search() {
-      const name = document.getElementById('nameInput').value;
-      fetch(`${API_URL}?name=${encodeURIComponent(name)}`)
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById('output').textContent = data.error || `Name: ${data.name}\nEmail: ${data.email}`;
-        })
-        .catch(err => {
-          document.getElementById('output').textContent = "Error: " + err;
-        });
-    }
+            <div id="tasks-container"></div>
 
-    // Register service worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
-    }
-  </script>
+            <!-- Completed Tasks Collapsible -->
+            <div class="collapsible">
+                <div class="collapsible-header" onclick="toggleCollapsible('completed')">
+                    <h3>Completed Tasks (<span id="completed-count">0</span>)</h3>
+                    <span id="completed-toggle">▼</span>
+                </div>
+                <div id="completed-content" class="collapsible-content">
+                    <div id="completed-tasks-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== DASHBOARD SCREEN ===== -->
+        <div id="dashboard" class="screen">
+            <!-- Player Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-value" id="player-level">1</span>
+                    <span class="stat-label">Level</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="player-xp">0</span>
+                    <span class="stat-label">Total XP</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="player-coins">0</span>
+                    <span class="stat-label">Coins</span>
+                </div>
+            </div>
+
+            <!-- Level Progress -->
+            <h3>Level Progress</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="level-progress" style="width: 0%">0 / 100</div>
+            </div>
+
+            <!-- Category Progress -->
+            <h2 class="mt-20">Category Progress</h2>
+            <div id="category-progress-container"></div>
+
+            <!-- Streaks -->
+            <h2 class="mt-20">Current Streaks</h2>
+            <div id="streaks-container"></div>
+
+            <!-- Badges -->
+            <h2 class="mt-20">Earned Badges</h2>
+            <div id="badges-container" class="badges-grid"></div>
+        </div>
+
+        <!-- ===== REWARDS SCREEN ===== -->
+        <div id="rewards" class="screen">
+            <button class="floating-add-btn" onclick="openRewardModal()">+</button>
+
+            <div class="stat-card mb-20">
+                <span class="stat-value" id="rewards-coins">0</span>
+                <span class="stat-label">Available Coins</span>
+            </div>
+
+            <div id="rewards-container"></div>
+
+            <!-- Claim History Collapsible -->
+            <div class="collapsible mt-20">
+                <div class="collapsible-header" onclick="toggleCollapsible('reward-history')">
+                    <h3>Claim History (<span id="history-count">0</span>)</h3>
+                    <span id="reward-history-toggle">▼</span>
+                </div>
+                <div id="reward-history-content" class="collapsible-content">
+                    <div id="reward-history-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SETTINGS SCREEN ===== -->
+        <div id="settings" class="screen">
+            <!-- Categories Management -->
+            <h2>Categories</h2>
+            <div id="categories-list" class="mb-20"></div>
+            <div class="add-btn-container">
+                <button class="add-btn-right" onclick="openCategoryModal()">+</button>
+            </div>
+
+            <!-- Default Values -->
+            <h2 class="mt-20">Default Task Values</h2>
+            <label>Default XP per Task</label>
+            <input type="number" id="default-xp" value="10" min="1">
+
+            <label>Default Coins per Task</label>
+            <input type="number" id="default-coins" value="5" min="1">
+
+            <button onclick="saveSettings()" class="mt-20">Save Settings</button>
+
+            <!-- Data Management -->
+            <h2 class="mt-20">Data Management</h2>
+            <button onclick="exportData()" class="btn-secondary">Export</button>
+            <button onclick="importData()" class="btn-secondary">Import</button>
+            <button onclick="resetData()" class="btn-danger">Reset All</button>
+        </div>
+    </div>
+
+    <!-- ===== TASK MODAL ===== -->
+    <div id="task-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="task-modal-title">Add Task</h2>
+                <button class="modal-close" onclick="closeTaskModal()">×</button>
+            </div>
+
+            <input type="hidden" id="task-id">
+
+            <label>Task Title</label>
+            <input type="text" id="task-title" placeholder="Enter task title">
+
+            <label>Category</label>
+            <select id="task-category"></select>
+
+            <label>Recurrence</label>
+            <select id="task-recurrence">
+                <option value="once">One-time</option>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="custom">Custom (times per week)</option>
+            </select>
+
+            <div id="custom-frequency-container" style="display: none;">
+                <label>Times per Week</label>
+                <input type="number" id="task-frequency" value="3" min="1" max="7">
+            </div>
+
+            <label>XP Reward</label>
+            <input type="number" id="task-xp" value="10" min="1">
+
+            <label>Coin Reward</label>
+            <input type="number" id="task-coins" value="5" min="1">
+
+            <div class="flex-between gap-10 mt-20">
+                <button onclick="saveTask()" class="btn-success">Save Task</button>
+                <button onclick="closeTaskModal()" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== REWARD MODAL ===== -->
+    <div id="reward-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add Reward</h2>
+                <button class="modal-close" onclick="closeRewardModal()">×</button>
+            </div>
+
+            <input type="hidden" id="reward-id">
+
+            <label>Reward Name</label>
+            <input type="text" id="reward-name" placeholder="e.g., Movie Night">
+
+            <label>Cost (Coins)</label>
+            <input type="number" id="reward-cost" value="50" min="1">
+
+            <div class="flex-between gap-10 mt-20">
+                <button onclick="saveReward()" class="btn-success">Save Reward</button>
+                <button onclick="closeRewardModal()" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== CATEGORY MODAL ===== -->
+    <div id="category-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add Category</h2>
+                <button class="modal-close" onclick="closeCategoryModal()">×</button>
+            </div>
+
+            <label>Category Name</label>
+            <input type="text" id="category-name" placeholder="e.g., Health">
+
+            <div class="flex-between gap-10 mt-20">
+                <button onclick="saveCategory()" class="btn-success">Save Category</button>
+                <button onclick="closeCategoryModal()" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DATA STRUCTURE =====
+        let appData = {
+            player: {
+                level: 1,
+                xp: 0,
+                coins: 0
+            },
+            categories: [
+                { id: 'health', name: 'Health', xp: 0, level: 1 },
+                { id: 'family', name: 'Family', xp: 0, level: 1 },
+                { id: 'paperwork', name: 'Paperwork', xp: 0, level: 1 },
+                { id: 'hobby', name: 'Hobby', xp: 0, level: 1 },
+                { id: 'house', name: 'House', xp: 0, level: 1 },
+                { id: 'vices', name: 'Vices', xp: 0, level: 1 },
+                { id: 'career', name: 'Career', xp: 0, level: 1 }
+            ],
+            tasks: [],
+            rewards: [],
+            rewardHistory: [],
+            badges: [],
+            settings: {
+                defaultXp: 10,
+                defaultCoins: 5
+            }
+        };
+
+        // ===== INITIALIZATION =====
+        function initApp() {
+            // Load data from localStorage
+            loadData();
+            
+            // Set up navigation
+            setupNavigation();
+            
+            // Set up task recurrence listener
+            document.getElementById('task-recurrence').addEventListener('change', (e) => {
+                const customContainer = document.getElementById('custom-frequency-container');
+                customContainer.style.display = e.target.value === 'custom' ? 'block' : 'none';
+            });
+            
+            // Render initial screen
+            renderDayView();
+            
+            // Check for badge achievements
+            checkBadges();
+            
+            // Register service worker
+            registerServiceWorker();
+        }
+
+        // ===== LOCAL STORAGE =====
+        function saveData() {
+            localStorage.setItem('qolData', JSON.stringify(appData));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('qolData');
+            if (saved) {
+                const loaded = JSON.parse(saved);
+                // Merge loaded data with defaults to handle new properties
+                appData = { ...appData, ...loaded };
+                
+                // Ensure all categories have required properties
+                appData.categories = appData.categories.map(cat => ({
+                    xp: 0,
+                    level: 1,
+                    ...cat
+                }));
+            }
+        }
+
+        // ===== NAVIGATION =====
+        function setupNavigation() {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const screenId = btn.dataset.screen;
+                    switchScreen(screenId);
+                });
+            });
+        }
+
+        function switchScreen(screenId) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            // Show selected screen
+            document.getElementById(screenId).classList.add('active');
+            document.querySelector(`[data-screen="${screenId}"]`).classList.add('active');
+            
+            // Render screen content
+            switch(screenId) {
+                case 'day-view':
+                    renderDayView();
+                    break;
+                case 'dashboard':
+                    renderDashboard();
+                    break;
+                case 'rewards':
+                    renderRewards();
+                    break;
+                case 'settings':
+                    renderSettings();
+                    break;
+            }
+        }
+
+        // ===== DAY VIEW =====
+        function renderDayView() {
+            const today = new Date().toDateString();
+            const todaysTasks = getTodaysTasks();
+            const completedTasks = todaysTasks.filter(t => t.completedToday);
+            const pendingTasks = todaysTasks.filter(t => !t.completedToday);
+            
+            // Render pending tasks
+            const tasksContainer = document.getElementById('tasks-container');
+            if (pendingTasks.length === 0) {
+                tasksContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✨</div>
+                        <p>No tasks for today. Add a task to get started!</p>
+                    </div>
+                `;
+            } else {
+                tasksContainer.innerHTML = pendingTasks.map(task => renderTaskItem(task)).join('');
+                setupDragAndDrop();
+            }
+            
+            // Render completed tasks
+            const completedContainer = document.getElementById('completed-tasks-container');
+            document.getElementById('completed-count').textContent = completedTasks.length;
+            
+            if (completedTasks.length === 0) {
+                completedContainer.innerHTML = `
+                    <div class="empty-state">
+                        <p>No completed tasks yet.</p>
+                    </div>
+                `;
+            } else {
+                completedContainer.innerHTML = completedTasks.map(task => renderTaskItem(task)).join('');
+            }
+        }
+
+        function getTodaysTasks() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            return appData.tasks.filter(task => {
+                if (task.recurrence === 'once') {
+                    // One-time tasks: show if not completed or completed today
+                    return !task.completed || isToday(task.lastCompleted);
+                } else {
+                    // Recurring tasks: always show
+                    return true;
+                }
+            }).map(task => {
+                // Check if completed today
+                const completedToday = task.lastCompleted && isToday(task.lastCompleted);
+                return { ...task, completedToday };
+            });
+        }
+
+        function isToday(dateString) {
+            if (!dateString) return false;
+            const date = new Date(dateString);
+            const today = new Date();
+            return date.toDateString() === today.toDateString();
+        }
+
+        function renderTaskItem(task) {
+            const category = appData.categories.find(c => c.id === task.category);
+            const categoryName = category ? category.name : 'Unknown';
+            
+            let streakText = '';
+            if (task.recurrence !== 'once' && task.streak > 0) {
+                streakText = `<span class="task-badge">🔥 ${task.streak} day streak</span>`;
+            }
+            
+            const completedClass = task.completedToday ? 'completed' : '';
+            
+            return `
+                <div class="task-item ${completedClass}" draggable="${!task.completedToday}" data-task-id="${task.id}">
+                    <div class="task-header">
+                        <div class="task-actions">
+                            ${!task.completedToday ? `<button class="btn-small btn-success" onclick="completeTask('${task.id}')">✓</button>` : ''}
+                            <button class="btn-small btn-secondary" onclick="editTask('${task.id}')">✎</button>
+                            <button class="btn-small btn-danger" onclick="deleteTask('${task.id}')">×</button>
+                        </div>
+                        <div class="task-title">${task.title}</div>
+                    </div>
+                    <div class="task-meta">
+                        <span class="task-badge category-badge">${categoryName}</span>
+                        <span class="task-badge">⭐ ${task.xp} XP</span>
+                        <span class="task-badge">🪙 ${task.coins} Coins</span>
+                        ${streakText}
+                        ${task.recurrence !== 'once' ? `<span class="task-badge">🔄 ${getRecurrenceText(task)}</span>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function getRecurrenceText(task) {
+            switch(task.recurrence) {
+                case 'daily': return 'Daily';
+                case 'weekly': return 'Weekly';
+                case 'custom': return `${task.frequency}x/week`;
+                default: return 'One-time';
+            }
+        }
+
+        // ===== DRAG AND DROP =====
+        function setupDragAndDrop() {
+            const taskItems = document.querySelectorAll('.task-item[draggable="true"]');
+            
+            taskItems.forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('drop', handleDrop);
+                item.addEventListener('dragend', handleDragEnd);
+            });
+        }
+
+        let draggedElement = null;
+
+        function handleDragStart(e) {
+            draggedElement = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            
+            const afterElement = getDragAfterElement(e.currentTarget.parentElement, e.clientY);
+            if (afterElement == null) {
+                e.currentTarget.parentElement.appendChild(draggedElement);
+            } else {
+                e.currentTarget.parentElement.insertBefore(draggedElement, afterElement);
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            reorderTasks();
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            draggedElement = null;
+        }
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.task-item:not(.dragging)')];
+            
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        function reorderTasks() {
+            const taskElements = document.querySelectorAll('#tasks-container .task-item');
+            const newOrder = Array.from(taskElements).map(el => el.dataset.taskId);
+            
+            // Reorder tasks array
+            const pendingTasks = appData.tasks.filter(t => !t.completedToday);
+            const orderedTasks = newOrder.map(id => appData.tasks.find(t => t.id === id));
+            const completedTasks = appData.tasks.filter(t => t.completedToday);
+            
+            // Update order property
+            orderedTasks.forEach((task, index) => {
+                if (task) task.order = index;
+            });
+            
+            appData.tasks = [...orderedTasks.filter(t => t), ...completedTasks];
+            saveData();
+        }
+
+        // ===== TASK MANAGEMENT =====
+        function openTaskModal(taskId = null) {
+            const modal = document.getElementById('task-modal');
+            const title = document.getElementById('task-modal-title');
+            
+            // Populate categories
+            const categorySelect = document.getElementById('task-category');
+            categorySelect.innerHTML = appData.categories.map(cat => 
+                `<option value="${cat.id}">${cat.name}</option>`
+            ).join('');
+            
+            if (taskId) {
+                // Edit mode
+                const task = appData.tasks.find(t => t.id === taskId);
+                title.textContent = 'Edit Task';
+                document.getElementById('task-id').value = task.id;
+                document.getElementById('task-title').value = task.title;
+                document.getElementById('task-category').value = task.category;
+                document.getElementById('task-recurrence').value = task.recurrence;
+                document.getElementById('task-xp').value = task.xp;
+                document.getElementById('task-coins').value = task.coins;
+                
+                if (task.recurrence === 'custom') {
+                    document.getElementById('custom-frequency-container').style.display = 'block';
+                    document.getElementById('task-frequency').value = task.frequency;
+                }
+            } else {
+                // Add mode
+                title.textContent = 'Add Task';
+                document.getElementById('task-id').value = '';
+                document.getElementById('task-title').value = '';
+                document.getElementById('task-recurrence').value = 'once';
+                document.getElementById('task-xp').value = appData.settings.defaultXp;
+                document.getElementById('task-coins').value = appData.settings.defaultCoins;
+                document.getElementById('custom-frequency-container').style.display = 'none';
+            }
+            
+            modal.classList.add('active');
+        }
+
+        function closeTaskModal() {
+            document.getElementById('task-modal').classList.remove('active');
+        }
+
+        function saveTask() {
+            const taskId = document.getElementById('task-id').value;
+            const title = document.getElementById('task-title').value.trim();
+            const category = document.getElementById('task-category').value;
+            const recurrence = document.getElementById('task-recurrence').value;
+            const xp = parseInt(document.getElementById('task-xp').value);
+            const coins = parseInt(document.getElementById('task-coins').value);
+            const frequency = parseInt(document.getElementById('task-frequency').value) || 3;
+            
+            if (!title) {
+                alert('Please enter a task title');
+                return;
+            }
+            
+            const taskData = {
+                title,
+                category,
+                recurrence,
+                xp,
+                coins,
+                frequency: recurrence === 'custom' ? frequency : null,
+                lastCompleted: null,
+                streak: 0,
+                completed: false
+            };
+            
+            if (taskId) {
+                // Update existing task
+                const task = appData.tasks.find(t => t.id === taskId);
+                Object.assign(task, taskData);
+            } else {
+                // Create new task
+                taskData.id = 'task-' + Date.now();
+                taskData.createdAt = new Date().toISOString();
+                taskData.order = appData.tasks.length;
+                appData.tasks.push(taskData);
+            }
+            
+            saveData();
+            closeTaskModal();
+            renderDayView();
+        }
+
+        function editTask(taskId) {
+            openTaskModal(taskId);
+        }
+
+        function deleteTask(taskId) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                appData.tasks = appData.tasks.filter(t => t.id !== taskId);
+                saveData();
+                renderDayView();
+            }
+        }
+
+        function completeTask(taskId) {
+            const task = appData.tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            const now = new Date().toISOString();
+            
+            // Award XP and coins
+            appData.player.xp += task.xp;
+            appData.player.coins += task.coins;
+            
+            // Update category XP
+            const category = appData.categories.find(c => c.id === task.category);
+            if (category) {
+                category.xp += task.xp;
+                updateCategoryLevel(category);
+            }
+            
+            // Update streak
+            if (task.recurrence !== 'once') {
+                if (task.lastCompleted && isYesterday(task.lastCompleted)) {
+                    task.streak++;
+                } else if (!task.lastCompleted || !isToday(task.lastCompleted)) {
+                    task.streak = 1;
+                }
+            }
+            
+            // Mark as completed
+            task.lastCompleted = now;
+            if (task.recurrence === 'once') {
+                task.completed = true;
+            }
+            
+            // Check for level up
+            checkLevelUp();
+            
+            // Check for badges
+            checkBadges();
+            
+            saveData();
+            renderDayView();
+            
+            // Show completion message
+            showNotification(`+${task.xp} XP, +${task.coins} Coins!`);
+        }
+
+        function isYesterday(dateString) {
+            const date = new Date(dateString);
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            return date.toDateString() === yesterday.toDateString();
+        }
+
+        // ===== LEVEL SYSTEM =====
+        function getXpForLevel(level) {
+            // XP needed increases by 50 each level
+            return 100 + (level - 1) * 50;
+        }
+
+        function checkLevelUp() {
+            let xpNeeded = getXpForLevel(appData.player.level);
+            
+            while (appData.player.xp >= xpNeeded) {
+                appData.player.level++;
+                showNotification(`🎉 Level Up! You are now level ${appData.player.level}!`);
+                xpNeeded = getXpForLevel(appData.player.level);
+            }
+        }
+
+        function updateCategoryLevel(category) {
+            const xpNeeded = getXpForLevel(category.level);
+            if (category.xp >= xpNeeded) {
+                category.level++;
+                category.xp -= xpNeeded;
+            }
+        }
+
+        // ===== BADGES SYSTEM =====
+        function checkBadges() {
+            const badges = [];
+            
+            // First task completed
+            if (appData.tasks.some(t => t.completed || t.lastCompleted)) {
+                addBadge('first-task', 'First Step', '✅', 'Complete your first task');
+            }
+            
+            // Reach level 5
+            if (appData.player.level >= 5) {
+                addBadge('level-5', 'Rising Star', '⭐', 'Reach level 5');
+            }
+            
+            // Reach level 10
+            if (appData.player.level >= 10) {
+                addBadge('level-10', 'Dedicated', '🌟', 'Reach level 10');
+            }
+            
+            // 7 day streak
+            if (appData.tasks.some(t => t.streak >= 7)) {
+                addBadge('streak-7', 'Week Warrior', '🔥', 'Maintain a 7-day streak');
+            }
+            
+            // 30 day streak
+            if (appData.tasks.some(t => t.streak >= 30)) {
+                addBadge('streak-30', 'Monthly Master', '🔥🔥', 'Maintain a 30-day streak');
+            }
+            
+            // 100 coins earned
+            if (appData.player.coins >= 100) {
+                addBadge('coins-100', 'Penny Pincher', '🪙', 'Earn 100 coins');
+            }
+            
+            // Category level 5
+            appData.categories.forEach(cat => {
+                if (cat.level >= 5) {
+                    addBadge(`cat-${cat.id}-5`, `${cat.name} Expert`, '🏆', `Reach level 5 in ${cat.name}`);
+                }
+            });
+        }
+
+        function addBadge(id, name, icon, description) {
+            if (!appData.badges.find(b => b.id === id)) {
+                appData.badges.push({ id, name, icon, description, earnedAt: new Date().toISOString() });
+                showNotification(`🏅 Badge Earned: ${name}!`);
+                saveData();
+            }
+        }
+
+        // ===== DASHBOARD =====
+        function renderDashboard() {
+            // Player stats
+            document.getElementById('player-level').textContent = appData.player.level;
+            document.getElementById('player-xp').textContent = appData.player.xp;
+            document.getElementById('player-coins').textContent = appData.player.coins;
+            
+            // Level progress
+            const currentLevelXp = appData.player.xp;
+            const xpNeeded = getXpForLevel(appData.player.level);
+            const xpForPrevLevel = appData.player.level > 1 ? getXpForLevel(appData.player.level - 1) : 0;
+            const xpInCurrentLevel = currentLevelXp - xpForPrevLevel;
+            const xpNeededForLevel = xpNeeded - xpForPrevLevel;
+            const progress = Math.min((xpInCurrentLevel / xpNeededForLevel) * 100, 100);
+            
+            const levelProgress = document.getElementById('level-progress');
+            levelProgress.style.width = progress + '%';
+            levelProgress.textContent = `${xpInCurrentLevel} / ${xpNeededForLevel}`;
+            
+            // Category progress
+            const categoryContainer = document.getElementById('category-progress-container');
+            categoryContainer.innerHTML = appData.categories.map(cat => {
+                const xpNeeded = getXpForLevel(cat.level);
+                const progress = (cat.xp / xpNeeded) * 100;
+                return `
+                    <div class="category-progress">
+                        <div class="category-header">
+                            <span>${cat.name} (Level ${cat.level})</span>
+                            <span>${cat.xp} / ${xpNeeded} XP</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Streaks
+            const streaksContainer = document.getElementById('streaks-container');
+            const activeTasks = appData.tasks.filter(t => t.recurrence !== 'once' && t.streak > 0);
+            
+            if (activeTasks.length === 0) {
+                streaksContainer.innerHTML = `
+                    <div class="empty-state">
+                        <p>No active streaks. Complete recurring tasks to build streaks!</p>
+                    </div>
+                `;
+            } else {
+                streaksContainer.innerHTML = activeTasks.map(task => {
+                    const category = appData.categories.find(c => c.id === task.category);
+                    return `
+                        <div class="task-item">
+                            <div class="task-title">${task.title}</div>
+                            <div class="task-meta">
+                                <span class="task-badge category-badge">${category.name}</span>
+                                <span class="task-badge">🔥 ${task.streak} days</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Badges
+            const badgesContainer = document.getElementById('badges-container');
+            if (appData.badges.length === 0) {
+                badgesContainer.innerHTML = `
+                    <div class="empty-state">
+                        <p>No badges earned yet. Keep completing tasks!</p>
+                    </div>
+                `;
+            } else {
+                badgesContainer.innerHTML = appData.badges.map(badge => `
+                    <div class="badge-item">
+                        <div class="badge-icon">${badge.icon}</div>
+                        <div class="badge-name">${badge.name}</div>
+                        <div class="badge-desc">${badge.description}</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // ===== REWARDS =====
+        function renderRewards() {
+            document.getElementById('rewards-coins').textContent = appData.player.coins;
+            
+            const container = document.getElementById('rewards-container');
+            if (appData.rewards.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎁</div>
+                        <p>No rewards yet. Add rewards you want to earn!</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = appData.rewards.map(reward => {
+                    const canAfford = appData.player.coins >= reward.cost;
+                    const claimCount = appData.rewardHistory.filter(h => h.rewardId === reward.id).length;
+                    return `
+                        <div class="reward-item">
+                            <div class="reward-info">
+                                <div class="reward-name">${reward.name}</div>
+                                <div class="reward-cost">🪙 ${reward.cost} coins</div>
+                                ${claimCount > 0 ? `<div class="task-badge" style="margin-top: 5px;">Claimed ${claimCount}x</div>` : ''}
+                            </div>
+                            <div>
+                                <button class="btn-small ${canAfford ? 'btn-success' : 'btn-secondary'}" 
+                                        onclick="claimReward('${reward.id}')" 
+                                        ${!canAfford ? 'disabled' : ''}>
+                                    Claim
+                                </button>
+                                <button class="btn-small btn-danger" onclick="deleteReward('${reward.id}')">×</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Render claim history
+            renderRewardHistory();
+        }
+
+        function renderRewardHistory() {
+            const historyContainer = document.getElementById('reward-history-container');
+            const historyCount = document.getElementById('history-count');
+            
+            if (!appData.rewardHistory) {
+                appData.rewardHistory = [];
+            }
+            
+            historyCount.textContent = appData.rewardHistory.length;
+            
+            if (appData.rewardHistory.length === 0) {
+                historyContainer.innerHTML = `
+                    <div class="empty-state">
+                        <p>No rewards claimed yet.</p>
+                    </div>
+                `;
+            } else {
+                // Sort by date, most recent first
+                const sortedHistory = [...appData.rewardHistory].sort((a, b) => 
+                    new Date(b.claimedAt) - new Date(a.claimedAt)
+                );
+                
+                historyContainer.innerHTML = sortedHistory.map(entry => {
+                    const date = new Date(entry.claimedAt);
+                    const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    return `
+                        <div class="task-item">
+                            <div class="task-title">${entry.rewardName}</div>
+                            <div class="task-meta">
+                                <span class="task-badge">🪙 ${entry.cost} coins</span>
+                                <span class="task-badge">📅 ${dateStr}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function openRewardModal() {
+            const modal = document.getElementById('reward-modal');
+            document.getElementById('reward-id').value = '';
+            document.getElementById('reward-name').value = '';
+            document.getElementById('reward-cost').value = '50';
+            modal.classList.add('active');
+        }
+
+        function closeRewardModal() {
+            document.getElementById('reward-modal').classList.remove('active');
+        }
+
+        function saveReward() {
+            const name = document.getElementById('reward-name').value.trim();
+            const cost = parseInt(document.getElementById('reward-cost').value);
+            
+            if (!name) {
+                alert('Please enter a reward name');
+                return;
+            }
+            
+            appData.rewards.push({
+                id: 'reward-' + Date.now(),
+                name,
+                cost,
+                createdAt: new Date().toISOString()
+            });
+            
+            saveData();
+            closeRewardModal();
+            renderRewards();
+        }
+
+        function deleteReward(rewardId) {
+            if (confirm('Are you sure you want to delete this reward?')) {
+                appData.rewards = appData.rewards.filter(r => r.id !== rewardId);
+                saveData();
+                renderRewards();
+            }
+        }
+
+        function claimReward(rewardId) {
+            const reward = appData.rewards.find(r => r.id === rewardId);
+            if (!reward) return;
+            
+            if (appData.player.coins >= reward.cost) {
+                if (confirm(`Claim "${reward.name}" for ${reward.cost} coins?`)) {
+                    appData.player.coins -= reward.cost;
+                    
+                    // Add to claim history
+                    if (!appData.rewardHistory) {
+                        appData.rewardHistory = [];
+                    }
+                    appData.rewardHistory.push({
+                        id: 'claim-' + Date.now(),
+                        rewardId: reward.id,
+                        rewardName: reward.name,
+                        cost: reward.cost,
+                        claimedAt: new Date().toISOString()
+                    });
+                    
+                    saveData();
+                    showNotification(`🎉 You claimed: ${reward.name}!`);
+                    renderRewards();
+                }
+            } else {
+                alert('Not enough coins!');
+            }
+        }
+
+        // ===== SETTINGS =====
+        function renderSettings() {
+            // Categories list
+            const categoriesContainer = document.getElementById('categories-list');
+            categoriesContainer.innerHTML = appData.categories.map(cat => `
+                <div class="task-item">
+                    <div class="flex-between">
+                        <span class="task-title">${cat.name}</span>
+                        <button class="btn-small btn-danger" onclick="deleteCategory('${cat.id}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Default values
+            document.getElementById('default-xp').value = appData.settings.defaultXp;
+            document.getElementById('default-coins').value = appData.settings.defaultCoins;
+        }
+
+        function openCategoryModal() {
+            const modal = document.getElementById('category-modal');
+            document.getElementById('category-name').value = '';
+            modal.classList.add('active');
+        }
+
+        function closeCategoryModal() {
+            document.getElementById('category-modal').classList.remove('active');
+        }
+
+        function saveCategory() {
+            const name = document.getElementById('category-name').value.trim();
+            
+            if (!name) {
+                alert('Please enter a category name');
+                return;
+            }
+            
+            appData.categories.push({
+                id: 'cat-' + Date.now(),
+                name,
+                xp: 0,
+                level: 1
+            });
+            
+            saveData();
+            closeCategoryModal();
+            renderSettings();
+        }
+
+        function deleteCategory(categoryId) {
+            // Check if any tasks use this category
+            const tasksUsingCategory = appData.tasks.filter(t => t.category === categoryId);
+            
+            if (tasksUsingCategory.length > 0) {
+                alert('Cannot delete category that has tasks. Please delete or reassign the tasks first.');
+                return;
+            }
+            
+            if (confirm('Are you sure you want to delete this category?')) {
+                appData.categories = appData.categories.filter(c => c.id !== categoryId);
+                saveData();
+                renderSettings();
+            }
+        }
+
+        function saveSettings() {
+            appData.settings.defaultXp = parseInt(document.getElementById('default-xp').value);
+            appData.settings.defaultCoins = parseInt(document.getElementById('default-coins').value);
+            saveData();
+            showNotification('Settings saved!');
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(appData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'qol-backup.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'application/json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const imported = JSON.parse(event.target.result);
+                        appData = imported;
+                        saveData();
+                        showNotification('Data imported successfully!');
+                        location.reload();
+                    } catch (error) {
+                        alert('Error importing data: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function resetData() {
+            if (confirm('Are you sure you want to reset ALL data? This cannot be undone!')) {
+                if (confirm('Really? This will delete everything!')) {
+                    localStorage.removeItem('qolData');
+                    location.reload();
+                }
+            }
+        }
+
+        // ===== UTILITIES =====
+        function toggleCollapsible(id) {
+            const content = document.getElementById(id + '-content');
+            const toggle = document.getElementById(id + '-toggle');
+            
+            if (content.classList.contains('open')) {
+                content.classList.remove('open');
+                toggle.textContent = '▼';
+            } else {
+                content.classList.add('open');
+                toggle.textContent = '▲';
+            }
+        }
+
+        function showNotification(message) {
+            // Simple notification system
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: var(--accent-color);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 8px;
+                box-shadow: var(--shadow);
+                z-index: 2000;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Add animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // ===== SERVICE WORKER =====
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                // Inline service worker
+                const swCode = `
+                    const CACHE_NAME = 'qol-v1';
+                    
+                    self.addEventListener('install', (event) => {
+                        self.skipWaiting();
+                    });
+                    
+                    self.addEventListener('activate', (event) => {
+                        event.waitUntil(clients.claim());
+                    });
+                    
+                    self.addEventListener('fetch', (event) => {
+                        event.respondWith(
+                            caches.match(event.request).then((response) => {
+                                return response || fetch(event.request).then((fetchResponse) => {
+                                    return caches.open(CACHE_NAME).then((cache) => {
+                                        cache.put(event.request, fetchResponse.clone());
+                                        return fetchResponse;
+                                    });
+                                });
+                            }).catch(() => {
+                                return caches.match(event.request);
+                            })
+                        );
+                    });
+                `;
+                
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                
+                navigator.serviceWorker.register(swUrl).then(() => {
+                    console.log('Service Worker registered');
+                }).catch((error) => {
+                    console.log('Service Worker registration failed:', error);
+                });
+            }
+        }
+
+        // ===== START APP =====
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
 </body>
 </html>

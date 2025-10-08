@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#000000"/>
+  <circle cx="256" cy="256" r="200" fill="#1a1a1a"/>
+  <circle cx="256" cy="256" r="170" fill="#2a2a2a" stroke="#666666" stroke-width="6"/>
+  
+  <!-- Star/XP icon -->
+  <path d="M 256 130 L 280 198 L 354 198 L 294 242 L 318 310 L 256 266 L 194 310 L 218 242 L 158 198 L 232 198 Z" 
+        fill="#cccccc" stroke="#e0e0e0" stroke-width="4"/>
+  
+  <!-- Circular progress indicator -->
+  <circle cx="256" cy="256" r="210" fill="none" stroke="#333333" stroke-width="16"/>
+  <circle cx="256" cy="256" r="210" fill="none" stroke="#888888" stroke-width="16" 
+          stroke-dasharray="420 900" stroke-linecap="round" transform="rotate(-90 256 256)"/>
+</svg>

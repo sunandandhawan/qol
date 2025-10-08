@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Maskable icon with safe area padding -->
+  <rect width="512" height="512" fill="#000000"/>
+  
+  <!-- Content in safe area (centered 80% of dimensions) -->
+  <g transform="translate(51.2, 51.2)">
+    <circle cx="204.8" cy="204.8" r="170" fill="#1a1a1a"/>
+    <circle cx="204.8" cy="204.8" r="145" fill="#2a2a2a" stroke="#666666" stroke-width="5"/>
+    
+    <!-- Star/XP icon -->
+    <path d="M 204.8 95 L 226 163 L 298 163 L 240 203 L 261 271 L 204.8 231 L 148.6 271 L 169.6 203 L 111.6 163 L 183.6 163 Z" 
+          fill="#cccccc" stroke="#e0e0e0" stroke-width="3.5"/>
+    
+    <!-- Circular progress indicator -->
+    <circle cx="204.8" cy="204.8" r="180" fill="none" stroke="#333333" stroke-width="14"/>
+    <circle cx="204.8" cy="204.8" r="180" fill="none" stroke="#888888" stroke-width="14" 
+            stroke-dasharray="360 770" stroke-linecap="round" transform="rotate(-90 204.8 204.8)"/>
+  </g>
+</svg>
