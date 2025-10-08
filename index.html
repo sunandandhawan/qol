@@ -35,6 +35,10 @@
             --shadow: 0 2px 8px rgba(255,255,255,0.05);
         }
 
+        html, body {
+          overscroll-behavior-x: none; /* disable horizontal nav */
+        }
+
         html {
             height: 100%;
             height: 100vh;
@@ -889,11 +893,11 @@
             const dayStr = days[now.getDay()];
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
                           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const dateStr = `${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+            const dateStr = `${months[now.getMonth()]} ${now.getDate()} ${now.getFullYear()}`;
             
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
-            document.getElementById('datetime-display').textContent = `${hours}:${minutes}, ${dayStr}, ${dateStr}`;
+            document.getElementById('datetime-display').textContent = `${hours}:${minutes} ${dayStr} ${dateStr}`;
         }
 
         // ===== LOCAL STORAGE =====
@@ -1776,6 +1780,11 @@
                 });
             }
         }
+
+        history.pushState(null, null, location.href);
+          window.onpopstate = function () {
+          history.go(1); // lock in place
+        };
 
         // ===== START APP =====
         window.addEventListener('DOMContentLoaded', initApp);
