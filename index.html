@@ -22,16 +22,21 @@
         }
 
         :root {
-            --accent-color: #666666;
-            --bg-color: #000000;
-            --text-color: #e0e0e0;
-            --text-light: #999999;
-            --border-color: #1a1a1a;
-            --hover-bg: #1a1a1a;
-            --card-bg: #0a0a0a;
-            --success-color: #888888;
-            --danger-color: #555555;
-            --shadow: 0 2px 8px rgba(255,255,255,0.05);
+            --accent-color: #FF6B9D;
+            --bg-color: #FFF8E7;
+            --text-color: #2D3436;
+            --text-light: #636E72;
+            --border-color: #FFD93D;
+            --hover-bg: #FFF4C9;
+            --card-bg: #FFFFFF;
+            --success-color: #6BCF7F;
+            --danger-color: #FF6B6B;
+            --shadow: 0 4px 12px rgba(255, 107, 157, 0.15);
+            --gradient-1: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+            --gradient-2: linear-gradient(135deg, #F093FB 0%, #F5576C 100%);
+            --gradient-3: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
+            --gradient-4: linear-gradient(135deg, #43E97B 0%, #38F9D7 100%);
+            --gradient-5: linear-gradient(135deg, #FA709A 0%, #FEE140 100%);
         }
 
         html, body {
@@ -46,7 +51,8 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg-color);
+            background: linear-gradient(135deg, #FFF8E7 0%, #FFE5F1 50%, #E8F5FF 100%);
+            background-attachment: fixed;
             color: var(--text-color);
             line-height: 1.6;
             font-size: 16px;
@@ -66,8 +72,9 @@
 
         /* ===== Navigation ===== */
         nav {
-            background: var(--bg-color);
-            border-top: 2px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 3px solid var(--accent-color);
             padding: 15px 0;
             padding-bottom: calc(15px + env(safe-area-inset-bottom));
             position: fixed;
@@ -75,7 +82,7 @@
             left: 0;
             right: 0;
             z-index: 1000;
-            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 -4px 20px rgba(255, 107, 157, 0.2);
         }
 
         nav ul {
@@ -91,21 +98,23 @@
             font-size: 16px;
             background: transparent;
             color: var(--text-color);
-            border: 2px solid var(--border-color);
-            border-radius: 6px;
+            border: 2px solid transparent;
+            border-radius: 20px;
             cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 500;
+            transition: all 0.3s;
+            font-weight: 600;
         }
 
         nav button:hover {
             background: var(--hover-bg);
+            transform: translateY(-2px);
         }
 
         nav button.active {
-            background: var(--accent-color);
+            background: var(--gradient-2);
             color: white;
-            border-color: var(--accent-color);
+            border-color: transparent;
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
         }
 
         /* ===== Screen Management ===== */
@@ -119,39 +128,46 @@
 
         /* ===== Typography ===== */
         h1 {
-            font-size: 32px;
+            font-size: 36px;
             margin-bottom: 20px;
-            font-weight: 600;
+            font-weight: 800;
+            background: var(--gradient-2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         h2 {
-            font-size: 24px;
+            font-size: 26px;
             margin-bottom: 15px;
-            font-weight: 600;
+            font-weight: 700;
+            color: var(--text-color);
         }
 
         h3 {
             font-size: 20px;
             margin-bottom: 12px;
-            font-weight: 600;
+            font-weight: 700;
+            color: var(--text-color);
         }
 
         /* ===== Buttons ===== */
         button, .btn {
             padding: 12px 20px;
             font-size: 16px;
-            background: var(--accent-color);
+            background: var(--gradient-2);
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 500;
+            transition: all 0.3s;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);
         }
 
         button:hover, .btn:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4);
         }
 
         button:active, .btn:active {
@@ -159,15 +175,18 @@
         }
 
         .btn-secondary {
-            background: var(--text-light);
+            background: linear-gradient(135deg, #A8DADC 0%, #457B9D 100%);
+            box-shadow: 0 4px 15px rgba(168, 218, 220, 0.3);
         }
 
         .btn-success {
-            background: var(--success-color);
+            background: linear-gradient(135deg, #6BCF7F 0%, #38F9D7 100%);
+            box-shadow: 0 4px 15px rgba(107, 207, 127, 0.3);
         }
 
         .btn-danger {
-            background: var(--danger-color);
+            background: linear-gradient(135deg, #FF6B6B 0%, #EE5A6F 100%);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
         }
 
         .btn-small {
@@ -181,14 +200,15 @@
         select,
         textarea {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             font-size: 16px;
-            border: 2px solid var(--border-color);
-            border-radius: 6px;
+            border: 3px solid rgba(255, 107, 157, 0.2);
+            border-radius: 12px;
             margin-bottom: 15px;
             font-family: inherit;
-            background: var(--card-bg);
+            background: rgba(255, 248, 231, 0.5);
             color: var(--text-color);
+            transition: all 0.3s;
         }
 
         input:focus,
@@ -196,6 +216,9 @@
         textarea:focus {
             outline: none;
             border-color: var(--accent-color);
+            background: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.2);
+            transform: translateY(-2px);
         }
 
         select option {
@@ -212,26 +235,29 @@
 
         /* ===== Task Item ===== */
         .task-item {
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
+            background: white;
+            border: 3px solid transparent;
+            border-radius: 16px;
             padding: 16px;
             margin-bottom: 12px;
             cursor: move;
-            transition: all 0.2s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
         }
 
         .task-item:hover {
-            box-shadow: var(--shadow);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.3);
         }
 
         .task-item.dragging {
-            opacity: 0.5;
+            opacity: 0.7;
+            transform: rotate(2deg);
         }
 
         .task-item.completed {
-            opacity: 0.6;
-            background: var(--hover-bg);
+            opacity: 0.7;
+            background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%);
         }
 
         .task-header {
@@ -263,40 +289,43 @@
 
         .task-badge {
             display: inline-block;
-            padding: 4px 10px;
-            background: var(--hover-bg);
-            border-radius: 12px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #FFF4C9 0%, #FFE5F1 100%);
+            border-radius: 20px;
             font-size: 13px;
-            font-weight: 500;
+            font-weight: 600;
+            border: 2px solid rgba(255, 107, 157, 0.2);
         }
 
         .category-badge {
-            background: #333333;
-            color: #e0e0e0;
-            border: 1px solid #555555;
+            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+            color: white;
+            border: none;
         }
 
         /* ===== Progress Bars ===== */
         .progress-bar {
             width: 100%;
-            height: 24px;
-            background: var(--hover-bg);
-            border-radius: 12px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
             overflow: hidden;
             margin-bottom: 15px;
             position: relative;
+            border: 2px solid rgba(255, 107, 157, 0.2);
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #444444, #666666);
-            transition: width 0.3s;
+            background: linear-gradient(90deg, #FF6B9D, #FFD93D, #6BCF7F);
+            transition: width 0.5s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #e0e0e0;
-            font-size: 13px;
-            font-weight: 600;
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         /* ===== Stats Grid ===== */
@@ -308,17 +337,27 @@
         }
 
         .stat-card {
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
+            background: white;
+            border: 3px solid transparent;
+            border-radius: 20px;
+            padding: 25px;
             text-align: center;
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.2);
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(255, 107, 157, 0.3);
         }
 
         .stat-value {
-            font-size: 32px;
-            font-weight: 700;
-            color: #cccccc;
+            font-size: 40px;
+            font-weight: 800;
+            background: var(--gradient-2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             display: block;
         }
 
@@ -349,11 +388,18 @@
         }
 
         .badge-item {
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
+            background: white;
+            border: 3px solid transparent;
+            border-radius: 20px;
+            padding: 20px;
             text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .badge-item:hover {
+            transform: scale(1.05) rotate(2deg);
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.3);
         }
 
         .badge-icon {
@@ -374,14 +420,21 @@
 
         /* ===== Rewards ===== */
         .reward-item {
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 12px;
+            background: white;
+            border: 3px solid transparent;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+        }
+
+        .reward-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.25);
         }
 
         .reward-info {
@@ -409,15 +462,19 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px;
-            background: var(--hover-bg);
-            border-radius: 8px;
+            padding: 18px;
+            background: linear-gradient(135deg, rgba(255, 244, 201, 0.8), rgba(255, 229, 241, 0.8));
+            border-radius: 16px;
             cursor: pointer;
             margin-bottom: 10px;
+            border: 2px solid rgba(255, 107, 157, 0.2);
+            transition: all 0.3s;
         }
 
         .collapsible-header:hover {
-            background: var(--border-color);
+            background: linear-gradient(135deg, #FFF4C9, #FFE5F1);
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.2);
         }
 
         .collapsible-content {
@@ -449,14 +506,15 @@
         }
 
         .modal-content {
-            background: var(--bg-color);
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            padding: 30px;
+            background: white;
+            border: 4px solid transparent;
+            border-radius: 24px;
+            padding: 35px;
             max-width: 500px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(255, 107, 157, 0.3);
         }
 
         .modal-header {
@@ -541,8 +599,12 @@
         .datetime-display {
             text-align: center;
             font-size: 32px;
-            font-weight: 600;
-            color: var(--text-color);
+            font-weight: 700;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         /* ===== Add Button Aligned Right ===== */
@@ -556,14 +618,14 @@
             width: 56px;
             height: 56px;
             border-radius: 50%;
-            background: var(--accent-color);
+            background: var(--gradient-4);
             color: white;
             border: none;
             font-size: 32px;
             line-height: 1;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(255,255,255,0.15);
-            transition: all 0.2s;
+            box-shadow: 0 6px 20px rgba(67, 233, 123, 0.4);
+            transition: all 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -571,12 +633,12 @@
         }
 
         .add-btn-right:hover {
-            transform: scale(1.1) translateY(-2px);
-            box-shadow: 0 6px 16px rgba(255,255,255,0.2);
+            transform: scale(1.15) rotate(90deg);
+            box-shadow: 0 8px 25px rgba(67, 233, 123, 0.5);
         }
 
         .add-btn-right:active {
-            transform: scale(1.05) translateY(0);
+            transform: scale(1.05) rotate(90deg);
         }
 
         /* ===== Floating Add Button ===== */
@@ -584,18 +646,18 @@
             position: fixed;
             right: 20px;
             bottom: 90px;
-            width: 56px;
-            height: 56px;
+            width: 64px;
+            height: 64px;
             border-radius: 50%;
-            background: var(--accent-color);
+            background: var(--gradient-5);
             color: white;
             border: none;
-            font-size: 32px;
+            font-size: 36px;
             line-height: 1;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(255,255,255,0.15);
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.4);
             z-index: 500;
-            transition: all 0.2s;
+            transition: all 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -603,12 +665,236 @@
         }
 
         .floating-add-btn:hover {
+            transform: scale(1.15) rotate(90deg);
+            box-shadow: 0 12px 35px rgba(255, 107, 157, 0.5);
+        }
+
+        .floating-add-btn:active {
+            transform: scale(1.05) rotate(90deg);
+        }
+
+        /* ===== Theme Toggle Switch ===== */
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .theme-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient-4);
+            transition: 0.4s;
+            border-radius: 34px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .theme-slider:before {
+            position: absolute;
+            content: "☀️";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        input:checked + .theme-slider {
+            background: var(--gradient-1);
+        }
+
+        input:checked + .theme-slider:before {
+            transform: translateX(26px);
+            content: "🌙";
+        }
+
+        .theme-slider:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ===== Dark Theme Overrides ===== */
+        body.dark-theme .task-item {
+            border: 2px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(255,255,255,0.05);
+            background-color: #000000;
+        }
+
+        body.dark-theme .task-item:hover {
+            box-shadow: 0 4px 12px rgba(255,255,255,0.08);
+        }
+
+        body.dark-theme .task-badge {
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+        }
+
+        body.dark-theme .category-badge {
+            background: #333333;
+            color: #e0e0e0;
+            border: 1px solid #555555;
+        }
+
+        body.dark-theme .stat-card,
+        body.dark-theme .badge-item,
+        body.dark-theme .reward-item {
+            border: 2px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(255,255,255,0.05);
+            background-color: #000000;
+        }
+
+        body.dark-theme .stat-card:hover,
+        body.dark-theme .badge-item:hover,
+        body.dark-theme .reward-item:hover {
+            box-shadow: 0 4px 12px rgba(255,255,255,0.08);
+        }
+
+        body.dark-theme .stat-value {
+            background: none;
+            -webkit-background-clip: unset;
+            -webkit-text-fill-color: #cccccc;
+            background-clip: unset;
+        }
+
+        body.dark-theme h1 {
+            background: none;
+            -webkit-background-clip: unset;
+            -webkit-text-fill-color: var(--text-color);
+            background-clip: unset;
+        }
+
+        body.dark-theme .datetime-display {
+            background: none;
+            -webkit-background-clip: unset;
+            -webkit-text-fill-color: var(--text-color);
+            background-clip: unset;
+            text-shadow: none;
+        }
+
+        body.dark-theme nav {
+            background: var(--bg-color);
+            backdrop-filter: none;
+            border-top: 2px solid var(--border-color);
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+        }
+
+        body.dark-theme nav button {
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+        }
+
+        body.dark-theme nav button:hover {
+            transform: translateY(0);
+        }
+
+        body.dark-theme nav button.active {
+            background: var(--accent-color);
+            box-shadow: none;
+        }
+
+        body.dark-theme button,
+        body.dark-theme .btn {
+            background: var(--accent-color);
+            box-shadow: none;
+            border-radius: 6px;
+        }
+
+        body.dark-theme .btn-secondary {
+            background: var(--text-light);
+            box-shadow: none;
+        }
+
+        body.dark-theme .btn-success {
+            background: var(--success-color);
+            box-shadow: none;
+        }
+
+        body.dark-theme .btn-danger {
+            background: var(--danger-color);
+            box-shadow: none;
+        }
+
+        body.dark-theme button:hover,
+        body.dark-theme .btn:hover {
+            opacity: 0.9;
+            box-shadow: none;
+        }
+
+        body.dark-theme .modal-content {
+            border: 2px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        body.dark-theme .collapsible-header {
+            background: var(--hover-bg);
+            border: none;
+        }
+
+        body.dark-theme .collapsible-header:hover {
+            background: var(--border-color);
+            transform: none;
+            box-shadow: none;
+        }
+
+        body.dark-theme input[type="text"],
+        body.dark-theme input[type="number"],
+        body.dark-theme select,
+        body.dark-theme textarea {
+            border: 2px solid var(--border-color);
+            background: var(--card-bg);
+        }
+
+        body.dark-theme input:focus,
+        body.dark-theme select:focus,
+        body.dark-theme textarea:focus {
+            border-color: var(--accent-color);
+            background: var(--card-bg);
+            box-shadow: none;
+            transform: none;
+        }
+
+        body.dark-theme .floating-add-btn,
+        body.dark-theme .add-btn-right {
+            background: var(--accent-color);
+            box-shadow: 0 4px 12px rgba(255,255,255,0.15);
+        }
+
+        body.dark-theme .floating-add-btn:hover,
+        body.dark-theme .add-btn-right:hover {
             transform: scale(1.1) translateY(-2px);
             box-shadow: 0 6px 16px rgba(255,255,255,0.2);
         }
 
-        .floating-add-btn:active {
+        body.dark-theme .floating-add-btn:active,
+        body.dark-theme .add-btn-right:active {
             transform: scale(1.05) translateY(0);
+        }
+
+        body.dark-theme .progress-bar {
+            background: var(--hover-bg);
+            border: none;
+        }
+
+        body.dark-theme .progress-fill {
+            background: linear-gradient(90deg, #444444, #666666);
+            color: #e0e0e0;
         }
     </style>
 </head>
@@ -727,6 +1013,21 @@
             <label>Default Coins per Task</label>
             <input type="number" id="default-coins" value="5" min="1">
 
+            <!-- Theme Toggle -->
+            <h2 class="mt-20">Theme</h2>
+            <div class="task-item" style="cursor: default;">
+                <div class="flex-between">
+                    <div>
+                        <div class="task-title" style="font-size: 16px; margin-bottom: 5px;">Dark Theme</div>
+                        <div style="font-size: 14px; color: var(--text-light);">Switch between dark AMOLED and bright joyful theme</div>
+                    </div>
+                    <label class="theme-switch">
+                        <input type="checkbox" id="theme-toggle">
+                        <span class="theme-slider"></span>
+                    </label>
+                </div>
+            </div>
+
             <button onclick="saveSettings()" class="mt-20">Save Settings</button>
 
             <!-- Data Management -->
@@ -842,7 +1143,8 @@
             badges: [],
             settings: {
                 defaultXp: 10,
-                defaultCoins: 5
+                defaultCoins: 5,
+                darkTheme: false
             }
         };
 
@@ -850,6 +1152,9 @@
         function initApp() {
             // Load data from localStorage
             loadData();
+            
+            // Apply theme
+            applyTheme();
             
             // Set up navigation
             setupNavigation();
@@ -1695,6 +2000,9 @@
             // Default values
             document.getElementById('default-xp').value = appData.settings.defaultXp;
             document.getElementById('default-coins').value = appData.settings.defaultCoins;
+            
+            // Theme toggle
+            document.getElementById('theme-toggle').checked = appData.settings.darkTheme;
         }
 
         function openCategoryModal() {
@@ -1746,8 +2054,82 @@
         function saveSettings() {
             appData.settings.defaultXp = parseInt(document.getElementById('default-xp').value);
             appData.settings.defaultCoins = parseInt(document.getElementById('default-coins').value);
+            appData.settings.darkTheme = document.getElementById('theme-toggle').checked;
             saveData();
+            applyTheme();
             showNotification('Settings saved!');
+        }
+
+        function applyTheme() {
+            const isDark = appData.settings.darkTheme;
+            const root = document.documentElement;
+            
+            if (isDark) {
+                // Dark AMOLED Theme
+                root.style.setProperty('--accent-color', '#666666');
+                root.style.setProperty('--bg-color', '#000000');
+                root.style.setProperty('--text-color', '#e0e0e0');
+                root.style.setProperty('--text-light', '#999999');
+                root.style.setProperty('--border-color', '#1a1a1a');
+                root.style.setProperty('--hover-bg', '#1a1a1a');
+                root.style.setProperty('--card-bg', '#0a0a0a');
+                root.style.setProperty('--success-color', '#888888');
+                root.style.setProperty('--danger-color', '#555555');
+                root.style.setProperty('--shadow', '0 2px 8px rgba(255,255,255,0.05)');
+                root.style.setProperty('--gradient-1', 'linear-gradient(90deg, #444444, #666666)');
+                root.style.setProperty('--gradient-2', 'linear-gradient(90deg, #555555, #777777)');
+                root.style.setProperty('--gradient-3', 'linear-gradient(90deg, #333333, #555555)');
+                root.style.setProperty('--gradient-4', 'linear-gradient(90deg, #666666, #888888)');
+                root.style.setProperty('--gradient-5', 'linear-gradient(90deg, #555555, #777777)');
+                
+                document.body.style.background = '#000000';
+                document.body.style.backgroundAttachment = 'fixed';
+                
+                // Apply dark theme class
+                document.body.classList.add('dark-theme');
+                document.body.classList.remove('light-theme');
+            } else {
+                // Bright Joyful Theme
+                root.style.setProperty('--accent-color', '#FF6B9D');
+                root.style.setProperty('--bg-color', '#FFF8E7');
+                root.style.setProperty('--text-color', '#2D3436');
+                root.style.setProperty('--text-light', '#636E72');
+                root.style.setProperty('--border-color', '#FFD93D');
+                root.style.setProperty('--hover-bg', '#FFF4C9');
+                root.style.setProperty('--card-bg', '#FFFFFF');
+                root.style.setProperty('--success-color', '#6BCF7F');
+                root.style.setProperty('--danger-color', '#FF6B6B');
+                root.style.setProperty('--shadow', '0 4px 12px rgba(255, 107, 157, 0.15)');
+                root.style.setProperty('--gradient-1', 'linear-gradient(135deg, #667EEA 0%, #764BA2 100%)');
+                root.style.setProperty('--gradient-2', 'linear-gradient(135deg, #F093FB 0%, #F5576C 100%)');
+                root.style.setProperty('--gradient-3', 'linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%)');
+                root.style.setProperty('--gradient-4', 'linear-gradient(135deg, #43E97B 0%, #38F9D7 100%)');
+                root.style.setProperty('--gradient-5', 'linear-gradient(135deg, #FA709A 0%, #FEE140 100%)');
+                
+                document.body.style.background = 'linear-gradient(135deg, #FFF8E7 0%, #FFE5F1 50%, #E8F5FF 100%)';
+                document.body.style.backgroundAttachment = 'fixed';
+                
+                // Apply light theme class
+                document.body.classList.add('light-theme');
+                document.body.classList.remove('dark-theme');
+            }
+            
+            // Re-render current screen to update all elements
+            const activeScreen = document.querySelector('.screen.active').id;
+            switch(activeScreen) {
+                case 'day-view':
+                    renderDayView();
+                    break;
+                case 'dashboard':
+                    renderDashboard();
+                    break;
+                case 'rewards':
+                    renderRewards();
+                    break;
+                case 'settings':
+                    renderSettings();
+                    break;
+            }
         }
 
         function exportData() {
