@@ -2064,6 +2064,9 @@
             const isDark = appData.settings.darkTheme;
             const root = document.documentElement;
             
+            // Update meta theme-color
+            const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+            
             if (isDark) {
                 // Dark AMOLED Theme
                 root.style.setProperty('--accent-color', '#666666');
@@ -2084,6 +2087,11 @@
                 
                 document.body.style.background = '#000000';
                 document.body.style.backgroundAttachment = 'fixed';
+                
+                // Update meta theme color for dark theme
+                if (metaThemeColor) {
+                    metaThemeColor.setAttribute('content', '#121318');
+                }
                 
                 // Apply dark theme class
                 document.body.classList.add('dark-theme');
@@ -2108,6 +2116,11 @@
                 
                 document.body.style.background = 'linear-gradient(135deg, #FFF8E7 0%, #FFE5F1 50%, #E8F5FF 100%)';
                 document.body.style.backgroundAttachment = 'fixed';
+                
+                // Update meta theme color for light theme
+                if (metaThemeColor) {
+                    metaThemeColor.setAttribute('content', '#FFF8E7');
+                }
                 
                 // Apply light theme class
                 document.body.classList.add('light-theme');
