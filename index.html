@@ -835,8 +835,32 @@
         }
 
         body.dark-theme .modal-content {
-            border: 2px solid var(--border-color);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            background: #000000 !important;
+            border: 2px solid var(--border-color) !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+        }
+
+        body.dark-theme .modal-title {
+            color: #ffffff !important;
+        }
+
+        body.dark-theme label {
+            color: #cccccc !important;
+        }
+
+        body.dark-theme input,
+        body.dark-theme select,
+        body.dark-theme textarea {
+            background: #1a1a1a !important;
+            color: #ffffff !important;
+            border: 1px solid #333333 !important;
+        }
+
+        body.dark-theme input:focus,
+        body.dark-theme select:focus,
+        body.dark-theme textarea:focus {
+            border-color: #666666 !important;
+            background: #2a2a2a !important;
         }
 
         body.dark-theme .collapsible-header {
@@ -848,23 +872,6 @@
             background: var(--border-color);
             transform: none;
             box-shadow: none;
-        }
-
-        body.dark-theme input[type="text"],
-        body.dark-theme input[type="number"],
-        body.dark-theme select,
-        body.dark-theme textarea {
-            border: 2px solid var(--border-color);
-            background: var(--card-bg);
-        }
-
-        body.dark-theme input:focus,
-        body.dark-theme select:focus,
-        body.dark-theme textarea:focus {
-            border-color: var(--accent-color);
-            background: var(--card-bg);
-            box-shadow: none;
-            transform: none;
         }
 
         body.dark-theme .floating-add-btn,
@@ -1550,32 +1557,44 @@
                 return;
             }
             
-            const taskData = {
-                title,
-                category,
-                recurrence,
-                xp,
-                coins,
-                lastCompleted: null,
-                streak: 0,
-                completed: false
-            };
-
-            // Add times per day for multiple recurrence
-            if (recurrence === 'multiple') {
-                taskData.timesPerDay = parseInt(document.getElementById('task-times-per-day').value);
-                taskData.completionsToday = 0;
-            }
-            
             if (taskId) {
-                // Update existing task
+                // Update existing task - preserve completion data
                 const task = appData.tasks.find(t => t.id === taskId);
-                Object.assign(task, taskData);
+                task.title = title;
+                task.category = category;
+                task.recurrence = recurrence;
+                task.xp = xp;
+                task.coins = coins;
+                
+                // Update times per day for multiple recurrence
+                if (recurrence === 'multiple') {
+                    task.timesPerDay = parseInt(document.getElementById('task-times-per-day').value);
+                    // Initialize completionsToday if it doesn't exist
+                    if (!task.completionsToday) task.completionsToday = 0;
+                }
+                // Preserve: lastCompleted, streak, completed, completionsToday
             } else {
                 // Create new task
-                taskData.id = 'task-' + Date.now();
-                taskData.createdAt = new Date().toISOString();
-                taskData.order = appData.tasks.length;
+                const taskData = {
+                    id: 'task-' + Date.now(),
+                    title,
+                    category,
+                    recurrence,
+                    xp,
+                    coins,
+                    lastCompleted: null,
+                    streak: 0,
+                    completed: false,
+                    createdAt: new Date().toISOString(),
+                    order: appData.tasks.length
+                };
+                
+                // Add times per day for multiple recurrence
+                if (recurrence === 'multiple') {
+                    taskData.timesPerDay = parseInt(document.getElementById('task-times-per-day').value);
+                    taskData.completionsToday = 0;
+                }
+                
                 appData.tasks.push(taskData);
             }
             
