@@ -31,7 +31,6 @@
             --card-bg: #0a0a0a;
             --success-color: #888888;
             --danger-color: #555555;
-            --warning-color: #777777;
             --shadow: 0 2px 8px rgba(255,255,255,0.05);
         }
 
@@ -529,10 +528,6 @@
             margin-top: 20px;
         }
 
-        .text-center {
-            text-align: center;
-        }
-
         .flex-between {
             display: flex;
             justify-content: space-between;
@@ -545,14 +540,9 @@
 
         .datetime-display {
             text-align: center;
-            padding: 10px;
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
             font-size: 32px;
             font-weight: 600;
             color: var(--text-color);
-            margin-bottom: 5px;
         }
 
         /* ===== Add Button Aligned Right ===== */
@@ -639,7 +629,7 @@
             <button class="floating-add-btn" onclick="openTaskModal()">+</button>
 
             <!-- Date and Time Display -->
-            <div id="datetime-display" class="datetime-display">
+            <div id="datetime-display" class="datetime-display" style="margin-bottom: 15px;">
                 00:00, Mon, Jan 1, 2025
             </div>
 
@@ -767,14 +757,7 @@
             <select id="task-recurrence">
                 <option value="once">One-time</option>
                 <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="custom">Custom (times per week)</option>
             </select>
-
-            <div id="custom-frequency-container" style="display: none;">
-                <label>Times per Week</label>
-                <input type="number" id="task-frequency" value="3" min="1" max="7">
-            </div>
 
             <label>XP Reward</label>
             <input type="number" id="task-xp" value="10" min="1">
@@ -865,12 +848,6 @@
             // Set up navigation
             setupNavigation();
             
-            // Set up task recurrence listener
-            document.getElementById('task-recurrence').addEventListener('change', (e) => {
-                const customContainer = document.getElementById('custom-frequency-container');
-                customContainer.style.display = e.target.value === 'custom' ? 'block' : 'none';
-            });
-            
             // Render initial screen
             renderDayView();
             
@@ -889,7 +866,7 @@
         function updateDateTime() {
             const now = new Date();
             
-            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thurs', 'Fri', 'Sat'];
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             const dayStr = days[now.getDay()];
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
                           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -1002,7 +979,7 @@
                     // One-time tasks: show if not completed or completed today
                     return !task.completed || isToday(task.lastCompleted);
                 } else {
-                    // Recurring tasks: always show
+                    // Daily tasks: always show
                     return true;
                 }
             }).map(task => {
@@ -1024,7 +1001,7 @@
             const categoryName = category ? category.name : 'Unknown';
             
             let streakText = '';
-            if (task.recurrence !== 'once' && task.streak > 0) {
+            if (task.recurrence === 'daily' && task.streak > 0) {
                 streakText = `<span class="task-badge">🔥 ${task.streak} day streak</span>`;
             }
             
@@ -1045,19 +1022,10 @@
                         <span class="task-badge">⭐ ${task.xp} XP</span>
                         <span class="task-badge">🪙 ${task.coins} Coins</span>
                         ${streakText}
-                        ${task.recurrence !== 'once' ? `<span class="task-badge">🔄 ${getRecurrenceText(task)}</span>` : ''}
+                        ${task.recurrence === 'daily' ? `<span class="task-badge">🔄 Daily</span>` : ''}
                     </div>
                 </div>
             `;
-        }
-
-        function getRecurrenceText(task) {
-            switch(task.recurrence) {
-                case 'daily': return 'Daily';
-                case 'weekly': return 'Weekly';
-                case 'custom': return `${task.frequency}x/week`;
-                default: return 'One-time';
-            }
         }
 
         // ===== DRAG AND DROP =====
@@ -1065,14 +1033,22 @@
             const taskItems = document.querySelectorAll('.task-item[draggable="true"]');
             
             taskItems.forEach(item => {
+                // Desktop drag and drop
                 item.addEventListener('dragstart', handleDragStart);
                 item.addEventListener('dragover', handleDragOver);
                 item.addEventListener('drop', handleDrop);
                 item.addEventListener('dragend', handleDragEnd);
+                
+                // Mobile touch events
+                item.addEventListener('touchstart', handleTouchStart, { passive: false });
+                item.addEventListener('touchmove', handleTouchMove, { passive: false });
+                item.addEventListener('touchend', handleTouchEnd, { passive: false });
             });
         }
 
         let draggedElement = null;
+        let touchY = 0;
+        let touchStartY = 0;
 
         function handleDragStart(e) {
             draggedElement = this;
@@ -1100,6 +1076,56 @@
         function handleDragEnd(e) {
             this.classList.remove('dragging');
             draggedElement = null;
+        }
+
+        // Touch event handlers for mobile
+        function handleTouchStart(e) {
+            draggedElement = this;
+            touchStartY = e.touches[0].clientY;
+            touchY = touchStartY;
+            
+            // Add dragging class after a short delay to distinguish from scroll
+            setTimeout(() => {
+                if (draggedElement === this) {
+                    this.classList.add('dragging');
+                }
+            }, 200);
+        }
+
+        function handleTouchMove(e) {
+            if (!draggedElement) return;
+            
+            e.preventDefault(); // Prevent scrolling while dragging
+            touchY = e.touches[0].clientY;
+            
+            // Only start dragging if moved more than 10px
+            if (Math.abs(touchY - touchStartY) < 10) return;
+            
+            draggedElement.classList.add('dragging');
+            
+            const container = draggedElement.parentElement;
+            const afterElement = getDragAfterElement(container, touchY);
+            
+            if (afterElement == null) {
+                container.appendChild(draggedElement);
+            } else {
+                container.insertBefore(draggedElement, afterElement);
+            }
+        }
+
+        function handleTouchEnd(e) {
+            if (!draggedElement) return;
+            
+            draggedElement.classList.remove('dragging');
+            
+            // Only reorder if actually dragged
+            if (Math.abs(touchY - touchStartY) > 10) {
+                reorderTasks();
+            }
+            
+            draggedElement = null;
+            touchY = 0;
+            touchStartY = 0;
         }
 
         function getDragAfterElement(container, y) {
@@ -1156,11 +1182,6 @@
                 document.getElementById('task-recurrence').value = task.recurrence;
                 document.getElementById('task-xp').value = task.xp;
                 document.getElementById('task-coins').value = task.coins;
-                
-                if (task.recurrence === 'custom') {
-                    document.getElementById('custom-frequency-container').style.display = 'block';
-                    document.getElementById('task-frequency').value = task.frequency;
-                }
             } else {
                 // Add mode
                 title.textContent = 'Add Task';
@@ -1169,7 +1190,6 @@
                 document.getElementById('task-recurrence').value = 'once';
                 document.getElementById('task-xp').value = appData.settings.defaultXp;
                 document.getElementById('task-coins').value = appData.settings.defaultCoins;
-                document.getElementById('custom-frequency-container').style.display = 'none';
             }
             
             modal.classList.add('active');
@@ -1186,7 +1206,6 @@
             const recurrence = document.getElementById('task-recurrence').value;
             const xp = parseInt(document.getElementById('task-xp').value);
             const coins = parseInt(document.getElementById('task-coins').value);
-            const frequency = parseInt(document.getElementById('task-frequency').value) || 3;
             
             if (!title) {
                 alert('Please enter a task title');
@@ -1199,7 +1218,6 @@
                 recurrence,
                 xp,
                 coins,
-                frequency: recurrence === 'custom' ? frequency : null,
                 lastCompleted: null,
                 streak: 0,
                 completed: false
@@ -1251,8 +1269,8 @@
                 updateCategoryLevel(category);
             }
             
-            // Update streak
-            if (task.recurrence !== 'once') {
+            // Update streak for daily tasks
+            if (task.recurrence === 'daily') {
                 if (task.lastCompleted && isYesterday(task.lastCompleted)) {
                     task.streak++;
                 } else if (!task.lastCompleted || !isToday(task.lastCompleted)) {
@@ -1401,7 +1419,7 @@
             
             // Streaks
             const streaksContainer = document.getElementById('streaks-container');
-            const activeTasks = appData.tasks.filter(t => t.recurrence !== 'once' && t.streak > 0);
+            const activeTasks = appData.tasks.filter(t => t.recurrence === 'daily' && t.streak > 0);
             
             if (activeTasks.length === 0) {
                 streaksContainer.innerHTML = `
