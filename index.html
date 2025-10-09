@@ -10,8 +10,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="QOL">
     <title>Quest of Life</title>
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-    <link rel="apple-touch-icon" href="./icon-192.svg">
+    <link rel="icon" type="image/svg+xml" href="./favicon.png">
+    <link rel="apple-touch-icon" href="./icon-192.png">
     <link rel="manifest" href="./manifest.json">
     <style>
         /* ===== Global Styles ===== */
@@ -1616,7 +1616,6 @@
                 
                 // Check if can complete more times today
                 if (task.completionsToday >= task.timesPerDay) {
-                    showNotification('Already completed all times for today!');
                     return;
                 }
                 
@@ -1667,9 +1666,6 @@
             
             saveData();
             renderDayView();
-            
-            // Show completion message
-            showNotification(`+${task.xp} XP, +${task.coins} Coins!`);
         }
 
         function isYesterday(dateString) {
@@ -1690,7 +1686,6 @@
             
             while (appData.player.xp >= xpNeeded) {
                 appData.player.level++;
-                showNotification(`🎉 Level Up! You are now level ${appData.player.level}!`);
                 xpNeeded = getXpForLevel(appData.player.level);
             }
         }
@@ -1748,7 +1743,6 @@
         function addBadge(id, name, icon, description) {
             if (!appData.badges.find(b => b.id === id)) {
                 appData.badges.push({ id, name, icon, description, earnedAt: new Date().toISOString() });
-                showNotification(`🏅 Badge Earned: ${name}!`);
                 saveData();
             }
         }
@@ -1976,7 +1970,6 @@
                     });
                     
                     saveData();
-                    showNotification(`🎉 You claimed: ${reward.name}!`);
                     renderRewards();
                 }
             } else {
@@ -2057,7 +2050,6 @@
             appData.settings.darkTheme = document.getElementById('theme-toggle').checked;
             saveData();
             applyTheme();
-            showNotification('Settings saved!');
         }
 
         function applyTheme() {
@@ -2168,7 +2160,6 @@
                         const imported = JSON.parse(event.target.result);
                         appData = imported;
                         saveData();
-                        showNotification('Data imported successfully!');
                         location.reload();
                     } catch (error) {
                         alert('Error importing data: ' + error.message);
@@ -2202,29 +2193,7 @@
             }
         }
 
-        function showNotification(message) {
-            // Simple notification system
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 80px;
-                right: 20px;
-                background: var(--accent-color);
-                color: white;
-                padding: 15px 25px;
-                border-radius: 8px;
-                box-shadow: var(--shadow);
-                z-index: 2000;
-                animation: slideIn 0.3s ease;
-            `;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
-        }
+
 
         // Add animations
         const style = document.createElement('style');
