@@ -354,9 +354,6 @@
         .stat-value {
             font-size: 40px;
             font-weight: 800;
-            background: var(--gradient-2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
             background-clip: text;
             display: block;
         }
@@ -1750,9 +1747,9 @@
         // ===== DASHBOARD =====
         function renderDashboard() {
             // Player stats
-            document.getElementById('player-level').textContent = appData.player.level;
-            document.getElementById('player-xp').textContent = appData.player.xp;
-            document.getElementById('player-coins').textContent = appData.player.coins;
+            document.getElementById('player-level').textContent = "⚔️ " + appData.player.level;
+            document.getElementById('player-xp').textContent = "⭐ " + appData.player.xp;
+            document.getElementById('player-coins').textContent = "🪙 " + appData.player.coins;
             
             // Level progress
             const currentLevelXp = appData.player.xp;
