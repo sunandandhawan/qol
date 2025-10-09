@@ -1829,7 +1829,7 @@
 
         // ===== REWARDS =====
         function renderRewards() {
-            document.getElementById('rewards-coins').textContent = appData.player.coins;
+            document.getElementById('rewards-coins').textContent = "🪙 " + appData.player.coins;
             
             const container = document.getElementById('rewards-container');
             if (appData.rewards.length === 0) {
