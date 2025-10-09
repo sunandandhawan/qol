@@ -754,10 +754,16 @@
             <select id="task-category"></select>
 
             <label>Recurrence</label>
-            <select id="task-recurrence">
+            <select id="task-recurrence" onchange="handleRecurrenceChange()">
                 <option value="once">One-time</option>
                 <option value="daily">Daily</option>
+                <option value="multiple">Multiple times a day</option>
             </select>
+
+            <div id="times-per-day-container" style="display: none;">
+                <label>Times per day</label>
+                <input type="number" id="task-times-per-day" value="3" min="2" max="20">
+            </div>
 
             <label>XP Reward</label>
             <input type="number" id="task-xp" value="10" min="1">
@@ -979,12 +985,23 @@
                     // One-time tasks: show if not completed or completed today
                     return !task.completed || isToday(task.lastCompleted);
                 } else {
-                    // Daily tasks: always show
+                    // Daily and multiple tasks: always show
                     return true;
                 }
             }).map(task => {
+                // Reset daily completion counter if it's a new day
+                if (task.recurrence === 'multiple' && task.lastCompleted && !isToday(task.lastCompleted)) {
+                    task.completionsToday = 0;
+                }
+                
                 // Check if completed today
-                const completedToday = task.lastCompleted && isToday(task.lastCompleted);
+                let completedToday = false;
+                if (task.recurrence === 'multiple') {
+                    completedToday = task.completionsToday >= task.timesPerDay;
+                } else {
+                    completedToday = task.lastCompleted && isToday(task.lastCompleted);
+                }
+                
                 return { ...task, completedToday };
             });
         }
@@ -1005,6 +1022,16 @@
                 streakText = `<span class="task-badge">🔥 ${task.streak} day streak</span>`;
             }
             
+            // For multiple per day tasks, show progress
+            let recurrenceText = '';
+            if (task.recurrence === 'daily') {
+                recurrenceText = `<span class="task-badge">🔄</span>`;
+            } else if (task.recurrence === 'multiple') {
+                const completed = task.completionsToday || 0;
+                const total = task.timesPerDay || 1;
+                recurrenceText = `<span class="task-badge">🔄 ${completed}/${total}</span>`;
+            }
+            
             const completedClass = task.completedToday ? 'completed' : '';
             
             return `
@@ -1022,7 +1049,7 @@
                         <span class="task-badge">⭐ ${task.xp} XP</span>
                         <span class="task-badge">🪙 ${task.coins} Coins</span>
                         ${streakText}
-                        ${task.recurrence === 'daily' ? `<span class="task-badge">🔄 Daily</span>` : ''}
+                        ${recurrenceText}
                     </div>
                 </div>
             `;
@@ -1182,6 +1209,7 @@
                 document.getElementById('task-recurrence').value = task.recurrence;
                 document.getElementById('task-xp').value = task.xp;
                 document.getElementById('task-coins').value = task.coins;
+                document.getElementById('task-times-per-day').value = task.timesPerDay || 3;
             } else {
                 // Add mode
                 title.textContent = 'Add Task';
@@ -1190,9 +1218,17 @@
                 document.getElementById('task-recurrence').value = 'once';
                 document.getElementById('task-xp').value = appData.settings.defaultXp;
                 document.getElementById('task-coins').value = appData.settings.defaultCoins;
+                document.getElementById('task-times-per-day').value = 3;
             }
             
+            handleRecurrenceChange();
             modal.classList.add('active');
+        }
+
+        function handleRecurrenceChange() {
+            const recurrence = document.getElementById('task-recurrence').value;
+            const container = document.getElementById('times-per-day-container');
+            container.style.display = recurrence === 'multiple' ? 'block' : 'none';
         }
 
         function closeTaskModal() {
@@ -1222,6 +1258,12 @@
                 streak: 0,
                 completed: false
             };
+
+            // Add times per day for multiple recurrence
+            if (recurrence === 'multiple') {
+                taskData.timesPerDay = parseInt(document.getElementById('task-times-per-day').value);
+                taskData.completionsToday = 0;
+            }
             
             if (taskId) {
                 // Update existing task
@@ -1258,6 +1300,49 @@
             
             const now = new Date().toISOString();
             
+            // Handle multiple per day tasks
+            if (task.recurrence === 'multiple') {
+                if (!task.completionsToday) task.completionsToday = 0;
+                
+                // Reset if new day
+                if (task.lastCompleted && !isToday(task.lastCompleted)) {
+                    task.completionsToday = 0;
+                }
+                
+                // Check if can complete more times today
+                if (task.completionsToday >= task.timesPerDay) {
+                    showNotification('Already completed all times for today!');
+                    return;
+                }
+                
+                task.completionsToday++;
+                task.lastCompleted = now;
+                
+                // Update streak if all completions done for the day
+                if (task.completionsToday >= task.timesPerDay) {
+                    if (task.lastCompleted && isYesterday(task.lastCompleted)) {
+                        task.streak++;
+                    } else if (!task.streak) {
+                        task.streak = 1;
+                    }
+                }
+            } else {
+                // Update streak for daily tasks
+                if (task.recurrence === 'daily') {
+                    if (task.lastCompleted && isYesterday(task.lastCompleted)) {
+                        task.streak++;
+                    } else if (!task.lastCompleted || !isToday(task.lastCompleted)) {
+                        task.streak = 1;
+                    }
+                }
+                
+                // Mark as completed
+                task.lastCompleted = now;
+                if (task.recurrence === 'once') {
+                    task.completed = true;
+                }
+            }
+            
             // Award XP and coins
             appData.player.xp += task.xp;
             appData.player.coins += task.coins;
@@ -1267,21 +1352,6 @@
             if (category) {
                 category.xp += task.xp;
                 updateCategoryLevel(category);
-            }
-            
-            // Update streak for daily tasks
-            if (task.recurrence === 'daily') {
-                if (task.lastCompleted && isYesterday(task.lastCompleted)) {
-                    task.streak++;
-                } else if (!task.lastCompleted || !isToday(task.lastCompleted)) {
-                    task.streak = 1;
-                }
-            }
-            
-            // Mark as completed
-            task.lastCompleted = now;
-            if (task.recurrence === 'once') {
-                task.completed = true;
             }
             
             // Check for level up
@@ -1419,7 +1489,7 @@
             
             // Streaks
             const streaksContainer = document.getElementById('streaks-container');
-            const activeTasks = appData.tasks.filter(t => t.recurrence === 'daily' && t.streak > 0);
+            const activeTasks = appData.tasks.filter(t => (t.recurrence === 'daily' || t.recurrence === 'multiple') && t.streak > 0);
             
             if (activeTasks.length === 0) {
                 streaksContainer.innerHTML = `
