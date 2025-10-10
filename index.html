@@ -580,17 +580,6 @@
             gap: 10px;
         }
 
-        .datetime-display {
-            text-align: center;
-            font-size: 32px;
-            font-weight: 700;
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
         /* ===== Add Button Aligned Right ===== */
         .add-btn-container {
             display: flex;
@@ -740,14 +729,6 @@
             background-clip: unset;
         }
 
-        body.dark-theme .datetime-display {
-            background: none;
-            -webkit-background-clip: unset;
-            -webkit-text-fill-color: var(--text-color);
-            background-clip: unset;
-            text-shadow: none;
-        }
-
         body.dark-theme nav {
             background: var(--bg-color);
             backdrop-filter: none;
@@ -858,11 +839,6 @@
         <!-- ===== DAY VIEW SCREEN ===== -->
         <div id="day-view" class="screen active">
             <button class="floating-add-btn" onclick="openTaskModal()">+</button>
-
-            <!-- Date and Time Display -->
-            <div id="datetime-display" class="datetime-display" style="margin-bottom: 15px;">
-                00:00, Mon, Jan 1, 2025
-            </div>
 
             <div id="tasks-container"></div>
 
@@ -1112,25 +1088,6 @@
             
             // Register service worker
             registerServiceWorker();
-            
-            // Update date and time
-            updateDateTime();
-            setInterval(updateDateTime, 1000); // Update every second
-        }
-
-        // ===== DATE TIME =====
-        function updateDateTime() {
-            const now = new Date();
-            
-            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            const dayStr = days[now.getDay()];
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const dateStr = `${months[now.getMonth()]} ${now.getDate()} ${now.getFullYear()}`;
-            
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            document.getElementById('datetime-display').textContent = `${hours}:${minutes} ${dayStr} ${dateStr}`;
         }
 
         // ===== LOCAL STORAGE =====
