@@ -1335,9 +1335,12 @@
         let touchStartY = 0;
 
         function handleDragStart(e) {
-            draggedElement = this.parentElement; // Get the task-item parent
-            draggedElement.classList.add('dragging');
+            const taskItem = this.closest('.task-item');
+            draggedElement = taskItem;
+            taskItem.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
+            // Set the drag image to the entire task item
+            e.dataTransfer.setDragImage(taskItem, e.offsetX, e.offsetY);
         }
 
         function handleDragOver(e) {
