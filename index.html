@@ -275,6 +275,7 @@
         .task-title {
             font-size: 18px;
             font-weight: 600;
+            width: 65%;
         }
 
         .task-actions {
@@ -292,7 +293,6 @@
             font-size: 14px;
             color: var(--text-light);
             clear: both;
-            margin-top: 20px;
         }
 
         .task-badge {
@@ -696,6 +696,11 @@
             background-color: #000000;
         }
 
+        body.dark-theme .task-item.completed {
+            opacity: 0.7;
+            background: #333333;
+        }
+
         body.dark-theme .task-badge {
             background: var(--hover-bg);
             border: 1px solid var(--border-color);
@@ -830,7 +835,7 @@
         <ul>
             <li><button class="nav-btn active" data-screen="day-view">Today</button></li>
             <li><button class="nav-btn" data-screen="dashboard">Dashboard</button></li>
-            <li><button class="nav-btn" data-screen="rewards">Rewards</button></li>
+            <li><button class="nav-btn" data-screen="quests">Quests</button></li>
             <li><button class="nav-btn" data-screen="settings">Settings</button></li>
         </ul>
     </nav>
@@ -869,6 +874,10 @@
                 <div class="stat-card">
                     <span class="stat-value" id="player-coins">0</span>
                     <span class="stat-label">Coins</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" onclick="switchScreen('rewards')">🏆</span>
+                    <span class="stat-label">Rewards</span>
                 </div>
             </div>
 
@@ -915,6 +924,19 @@
                     <div id="reward-history-container"></div>
                 </div>
             </div>
+        </div>
+
+        <div id="quests" class="screen">
+            <h1>All Quests</h1>
+            
+            <!-- Search Bar -->
+            <div class="mb-20">
+                <input type="text" id="quest-search" placeholder="🔍 Search tasks..." 
+                       oninput="filterQuests()" style="margin-bottom: 0;">
+            </div>
+
+            <!-- Quests List -->
+            <div id="quests-container"></div>
         </div>
 
         <!-- ===== SETTINGS SCREEN ===== -->
@@ -1128,7 +1150,8 @@
             
             // Show selected screen
             document.getElementById(screenId).classList.add('active');
-            document.querySelector(`[data-screen="${screenId}"]`).classList.add('active');
+            const navItem = document.querySelector(`[data-screen="${screenId}"]`);
+            if (navItem) navItem.classList.add('active');
             
             // Render screen content
             switch(screenId) {
@@ -1140,6 +1163,9 @@
                     break;
                 case 'rewards':
                     renderRewards();
+                    break;
+                case 'quests':
+                    renderQuests();
                     break;
                 case 'settings':
                     renderSettings();
@@ -1510,7 +1536,7 @@
             
             saveData();
             closeTaskModal();
-            renderDayView();
+            switchScreen(document.querySelector('.screen.active').id);
         }
 
         function editTask(taskId) {
@@ -1521,15 +1547,13 @@
             if (confirm('Are you sure you want to delete this task?')) {
                 appData.tasks = appData.tasks.filter(t => t.id !== taskId);
                 saveData();
-                renderDayView();
+                switchScreen(document.querySelector('.screen.active').id);
             }
         }
 
         function completeTask(taskId) {
             const task = appData.tasks.find(t => t.id === taskId);
             if (!task) return;
-            
-            const now = new Date().toISOString();
             
             // Handle multiple per day tasks
             if (task.recurrence === 'multiple') {
@@ -1546,7 +1570,7 @@
                 }
                 
                 task.completionsToday++;
-                task.lastCompleted = now;
+                setTaskCompleted(task);
                 
                 // Update streak if all completions done for the day
                 if (task.completionsToday >= task.timesPerDay) {
@@ -1567,7 +1591,7 @@
                 }
                 
                 // Mark as completed
-                task.lastCompleted = now;
+                setTaskCompleted(task);
                 if (task.recurrence === 'once') {
                     task.completed = true;
                 }
@@ -1592,6 +1616,12 @@
             
             saveData();
             renderDayView();
+        }
+        
+        function setTaskCompleted(task) {
+            task.lastCompleted = new Date().toISOString();
+            task.completedHistory = task.completedHistory || [];
+            task.completedHistory.push(task.lastCompleted);
         }
 
         function isYesterday(dateString) {
@@ -1756,6 +1786,96 @@
             }
         }
 
+        // ===== QUEST FILTER =====
+        let questSearchTerm = '';
+
+        function filterQuests() {
+            questSearchTerm = document.getElementById('quest-search').value.toLowerCase();
+            renderQuests();
+        }
+
+        function renderQuests() {
+            // Calculate stats
+            const totalQuests = appData.tasks.length;
+            
+            // Filter tasks based on current filter and search
+            let filteredTasks = [...appData.tasks];
+            
+            // Apply search
+            if (questSearchTerm) {
+                filteredTasks = filteredTasks.filter(task => {
+                    const category = appData.categories.find(c => c.id === task.category);
+                    const categoryName = category ? category.name.toLowerCase() : '';
+                    return task.title.toLowerCase().includes(questSearchTerm) || 
+                           categoryName.includes(questSearchTerm);
+                });
+            }
+            
+            // Render tasks
+            const container = document.getElementById('quests-container');
+            
+            if (filteredTasks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <p>${questSearchTerm ? 'No tasks match your search.' : 'No tasks in this category.'}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filteredTasks.map(task => {
+                const category = appData.categories.find(c => c.id === task.category);
+                const categoryName = category ? category.name : 'Unknown';
+                
+                let lastCompletedText = 'Never completed';
+                
+                if (task.lastCompleted) {
+                    const date = new Date(task.lastCompleted);
+                    const completedDates = [...new Set((task.completedHistory || [task.lastCompleted]).map(d => d.split('T')[0]))].join(', ');
+                    lastCompletedText = `Completions: ${completedDates}`;
+                }
+                
+                let recurrenceInfo = '';
+                if (task.recurrence === 'daily') {
+                    recurrenceInfo = '<span class="task-badge">🔄</span>';
+                } else if (task.recurrence === 'multiple') {
+                    recurrenceInfo = `<span class="task-badge">🔄 ${task.timesPerDay}x</span>`;
+                }
+                
+                let streakBadge = '';
+                if (task.streak > 0) {
+                    streakBadge = `<span class="task-badge">🔥 ${task.streak}</span>`;
+                }
+                
+                const createdDate = new Date(task.createdAt).toLocaleDateString();
+                
+                return `
+                    <div class="task-item">
+                        <div class="task-content" style="width: 100%;">
+                            <div class="task-header">
+                                <div class="task-actions">
+                                    <button class="btn-small btn-secondary" onclick="editTask('${task.id}')">✎</button>
+                                    <button class="btn-small btn-danger" onclick="deleteTask('${task.id}')">×</button>
+                                </div>
+                                <div class="task-title">${task.title}</div>
+                            </div>
+                            <div class="task-meta">
+                                <span class="task-badge category-badge">${categoryName}</span>
+                                ${recurrenceInfo}
+                                ${streakBadge}
+                                <span class="task-badge">⭐ ${task.xp}</span>
+                                <span class="task-badge">🪙 ${task.coins}</span>
+                            </div>
+                            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.1);height: 30px; overflow: hidden;" onclick="this.style.height = this.style.height === 'auto' ? '30px' : 'auto';">
+                                <span style="color: var(--text-light); font-size: 13px; font-style: italic; ">${lastCompletedText}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
         // ===== REWARDS =====
         function renderRewards() {
             document.getElementById('rewards-coins').textContent = "🪙 " + appData.player.coins;
@@ -1825,7 +1945,6 @@
                         <div class="task-item">
                             <div class="task-title">${entry.rewardName}</div>
                             <div class="task-meta">
-                                <span class="task-badge">🪙 ${entry.cost} coins</span>
                                 <span class="task-badge">📅 ${dateStr}</span>
                             </div>
                         </div>
@@ -2048,21 +2167,7 @@
             }
             
             // Re-render current screen to update all elements
-            const activeScreen = document.querySelector('.screen.active').id;
-            switch(activeScreen) {
-                case 'day-view':
-                    renderDayView();
-                    break;
-                case 'dashboard':
-                    renderDashboard();
-                    break;
-                case 'rewards':
-                    renderRewards();
-                    break;
-                case 'settings':
-                    renderSettings();
-                    break;
-            }
+            switchScreen(document.querySelector('.screen.active').id);
         }
 
         function exportData() {
