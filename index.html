@@ -311,6 +311,14 @@
             border: none;
         }
 
+        .base-strip {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            height: 30px;
+            overflow: hidden;
+        }
+        
         /* ===== Progress Bars ===== */
         .progress-bar {
             width: 100%;
@@ -420,7 +428,6 @@
             border-radius: 16px;
             padding: 20px;
             margin-bottom: 15px;
-            display: flex;
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
@@ -435,12 +442,6 @@
             font-size: 18px;
             font-weight: 600;
             margin-bottom: 4px;
-        }
-
-        .reward-cost {
-            font-size: 16px;
-            color: #999999;
-            font-weight: 600;
         }
 
         /* ===== Collapsible Section ===== */
@@ -606,33 +607,6 @@
         }
 
         .add-btn-right:active {
-            transform: scale(1.05) rotate(90deg);
-        }
-
-        /* ===== Floating Add Button ===== */
-        .floating-add-btn {
-            position: fixed;
-            right: 20px;
-            bottom: 90px;
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            background: var(--gradient-5);
-            color: white;
-            border: none;
-            font-size: 36px;
-            line-height: 1;
-            cursor: pointer;
-            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.4);
-            z-index: 500;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
-        }
-
-        .floating-add-btn:active {
             transform: scale(1.05) rotate(90deg);
         }
 
@@ -807,13 +781,11 @@
             border: none;
         }
 
-        body.dark-theme .floating-add-btn,
         body.dark-theme .add-btn-right {
             background: var(--accent-color);
             box-shadow: 0 4px 12px rgba(255,255,255,0.15);
         }
 
-        body.dark-theme .floating-add-btn:active,
         body.dark-theme .add-btn-right:active {
             transform: scale(1.05) translateY(0);
         }
@@ -843,20 +815,7 @@
     <div class="container">
         <!-- ===== DAY VIEW SCREEN ===== -->
         <div id="day-view" class="screen active">
-            <button class="floating-add-btn" onclick="openTaskModal()">+</button>
-
             <div id="tasks-container"></div>
-
-            <!-- Completed Tasks Collapsible -->
-            <div class="collapsible">
-                <div class="collapsible-header" onclick="toggleCollapsible('completed')">
-                    <h3>Completed Tasks (<span id="completed-count">0</span>)</h3>
-                    <span id="completed-toggle">▼</span>
-                </div>
-                <div id="completed-content" class="collapsible-content">
-                    <div id="completed-tasks-container"></div>
-                </div>
-            </div>
         </div>
 
         <!-- ===== DASHBOARD SCREEN ===== -->
@@ -905,8 +864,6 @@
 
         <!-- ===== REWARDS SCREEN ===== -->
         <div id="rewards" class="screen">
-            <button class="floating-add-btn" onclick="openRewardModal()">+</button>
-
             <div class="stat-card mb-20">
                 <span class="stat-value" id="rewards-coins">0</span>
                 <span class="stat-label">Available Coins</span>
@@ -914,15 +871,8 @@
 
             <div id="rewards-container"></div>
 
-            <!-- Claim History Collapsible -->
-            <div class="collapsible mt-20">
-                <div class="collapsible-header" onclick="toggleCollapsible('reward-history')">
-                    <h3>Claim History (<span id="history-count">0</span>)</h3>
-                    <span id="reward-history-toggle">▼</span>
-                </div>
-                <div id="reward-history-content" class="collapsible-content">
-                    <div id="reward-history-container"></div>
-                </div>
+            <div class="add-btn-container">
+                <button class="add-btn-right" onclick="openRewardModal()">+</button>
             </div>
         </div>
 
@@ -1082,7 +1032,6 @@
             ],
             tasks: [],
             rewards: [],
-            rewardHistory: [],
             badges: [],
             settings: {
                 defaultXp: 10,
@@ -1175,14 +1124,10 @@
 
         // ===== DAY VIEW =====
         function renderDayView() {
-            const today = new Date().toDateString();
             const todaysTasks = getTodaysTasks();
-            const completedTasks = todaysTasks.filter(t => t.completedToday);
-            const pendingTasks = todaysTasks.filter(t => !t.completedToday);
-            
-            // Render pending tasks
             const tasksContainer = document.getElementById('tasks-container');
-            if (pendingTasks.length === 0) {
+            
+            if (todaysTasks.length === 0) {
                 tasksContainer.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">✨</div>
@@ -1190,53 +1135,29 @@
                     </div>
                 `;
             } else {
-                tasksContainer.innerHTML = pendingTasks.map(task => renderTaskItem(task)).join('');
+                tasksContainer.innerHTML = todaysTasks.map(task => renderTaskItem(task)).join('');
                 setupDragAndDrop();
-            }
-            
-            // Render completed tasks
-            const completedContainer = document.getElementById('completed-tasks-container');
-            document.getElementById('completed-count').textContent = completedTasks.length;
-            
-            if (completedTasks.length === 0) {
-                completedContainer.innerHTML = `
-                    <div class="empty-state">
-                        <p>No completed tasks yet.</p>
-                    </div>
-                `;
-            } else {
-                completedContainer.innerHTML = completedTasks.map(task => renderTaskItem(task)).join('');
             }
         }
 
         function getTodaysTasks() {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            return appData.tasks.filter(task => {
-                if (task.recurrence === 'once') {
-                    // One-time tasks: show if not completed or completed today
-                    return !task.completed || isToday(task.lastCompleted);
-                } else {
-                    // Daily and multiple tasks: always show
-                    return true;
-                }
-            }).map(task => {
-                // Reset daily completion counter if it's a new day
-                if (task.recurrence === 'multiple' && task.lastCompleted && !isToday(task.lastCompleted)) {
-                    task.completionsToday = 0;
-                }
-                
-                // Check if completed today
-                let completedToday = false;
-                if (task.recurrence === 'multiple') {
-                    completedToday = task.completionsToday >= task.timesPerDay;
-                } else {
-                    completedToday = task.lastCompleted && isToday(task.lastCompleted);
-                }
-                
-                return { ...task, completedToday };
-            });
+            return appData.tasks
+                .filter(task => {
+                    // Exclude completed one-time tasks
+                    if (task.recurrence === 'once' && task.completed) return false;
+                    
+                    // Reset completion counter for multiple-per-day tasks on new day
+                    if (task.recurrence === 'multiple' && task.lastCompleted && !isToday(task.lastCompleted)) {
+                        task.completionsToday = 0;
+                    }
+                    
+                    // Exclude tasks completed today
+                    if (task.recurrence === 'multiple') {
+                        return task.completionsToday < task.timesPerDay;
+                    } else {
+                        return !task.lastCompleted || !isToday(task.lastCompleted);
+                    }
+                });
         }
 
         function isToday(dateString) {
@@ -1265,15 +1186,13 @@
                 recurrenceText = `<span class="task-badge">🔄 ${completed}/${total}</span>`;
             }
             
-            const completedClass = task.completedToday ? 'completed' : '';
-            
             return `
-                <div class="task-item ${completedClass}" data-task-id="${task.id}">
-                    ${!task.completedToday ? '<div class="task-drag-handle" draggable="true">⋮⋮</div>' : ''}
+                <div class="task-item" data-task-id="${task.id}">
+                    <div class="task-drag-handle" draggable="true">⋮⋮</div>
                     <div class="task-content">
                         <div class="task-header">
                             <div class="task-actions">
-                                ${!task.completedToday ? `<button class="btn-small btn-success" onclick="completeTask('${task.id}')">✓</button>` : ''}
+                                <button class="btn-small btn-success" onclick="completeTask('${task.id}')">✓</button>
                                 <button class="btn-small btn-secondary" onclick="editTask('${task.id}')">✎</button>
                                 <button class="btn-small btn-danger" onclick="deleteTask('${task.id}')">×</button>
                             </div>
@@ -1419,22 +1338,27 @@
             const taskElements = document.querySelectorAll('#tasks-container .task-item');
             const newOrder = Array.from(taskElements).map(el => el.dataset.taskId);
             
-            // Reorder tasks array
-            const pendingTasks = appData.tasks.filter(t => !t.completedToday);
-            const orderedTasks = newOrder.map(id => appData.tasks.find(t => t.id === id));
-            const completedTasks = appData.tasks.filter(t => t.completedToday);
+            // Get tasks shown in Today view vs all others
+            const todaysTaskIds = new Set(getTodaysTasks().map(t => t.id));
+            const tasksNotInToday = appData.tasks.filter(t => !todaysTaskIds.has(t.id));
+            
+            // Create ordered list from visible tasks
+            const orderedTasks = newOrder
+                .map(id => appData.tasks.find(t => t.id === id))
+                .filter(t => t);
             
             // Update order property
             orderedTasks.forEach((task, index) => {
-                if (task) task.order = index;
+                task.order = index;
             });
             
-            appData.tasks = [...orderedTasks.filter(t => t), ...completedTasks];
+            // Combine: ordered visible tasks + tasks not shown today
+            appData.tasks = [...orderedTasks, ...tasksNotInToday];
             saveData();
         }
 
         // ===== TASK MANAGEMENT =====
-        function openTaskModal(taskId = null) {
+        function openTaskModal(taskId = null, taskTitle = '') {
             const modal = document.getElementById('task-modal');
             const title = document.getElementById('task-modal-title');
             
@@ -1459,7 +1383,7 @@
                 // Add mode
                 title.textContent = 'Add Task';
                 document.getElementById('task-id').value = '';
-                document.getElementById('task-title').value = '';
+                document.getElementById('task-title').value = taskTitle;
                 document.getElementById('task-recurrence').value = 'once';
                 document.getElementById('task-xp').value = appData.settings.defaultXp;
                 document.getElementById('task-coins').value = appData.settings.defaultCoins;
@@ -1541,6 +1465,17 @@
 
         function editTask(taskId) {
             openTaskModal(taskId);
+        }
+
+        function reDoTask(taskId) {
+            const task = appData.tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            task.lastCompleted = null;
+            task.completed = false;
+            
+            saveData();
+            switchScreen('day-view');
         }
 
         function deleteTask(taskId) {
@@ -1819,6 +1754,7 @@
                     <div class="empty-state">
                         <div class="empty-state-icon">🔍</div>
                         <p>${questSearchTerm ? 'No tasks match your search.' : 'No tasks in this category.'}</p>
+                        <button class="mt-20" onclick="openTaskModal(null, '${questSearchTerm}')">Add it?</button>
                     </div>
                 `;
                 return;
@@ -1855,6 +1791,7 @@
                         <div class="task-content" style="width: 100%;">
                             <div class="task-header">
                                 <div class="task-actions">
+                                    ${task.completed ? '<button class="btn-small btn-secondary" onclick="reDoTask(\'' + task.id + '\')">↻</button>' : ''}
                                     <button class="btn-small btn-secondary" onclick="editTask('${task.id}')">✎</button>
                                     <button class="btn-small btn-danger" onclick="deleteTask('${task.id}')">×</button>
                                 </div>
@@ -1867,13 +1804,17 @@
                                 <span class="task-badge">⭐ ${task.xp}</span>
                                 <span class="task-badge">🪙 ${task.coins}</span>
                             </div>
-                            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.1);height: 30px; overflow: hidden;" onclick="this.style.height = this.style.height === 'auto' ? '30px' : 'auto';">
+                            <div class="base-strip" onclick="toggleStrip(this)">
                                 <span style="color: var(--text-light); font-size: 13px; font-style: italic; ">${lastCompletedText}</span>
                             </div>
                         </div>
                     </div>
                 `;
             }).join('');
+        }
+
+        function toggleStrip(element) {
+            element.style.height = element.style.height === 'auto' ? '30px' : 'auto';
         }
 
         // ===== REWARDS =====
@@ -1891,15 +1832,10 @@
             } else {
                 container.innerHTML = appData.rewards.map(reward => {
                     const canAfford = appData.player.coins >= reward.cost;
-                    const claimCount = appData.rewardHistory.filter(h => h.rewardId === reward.id).length;
+                    const claimHistoryText = reward.claimHistory ? `Claims: ${reward.claimHistory.map(d => d.split('T')[0]).join(', ')}`: 'Never claimed';
                     return `
                         <div class="reward-item">
-                            <div class="reward-info">
-                                <div class="reward-name">${reward.name}</div>
-                                <div class="reward-cost">🪙 ${reward.cost} coins</div>
-                                ${claimCount > 0 ? `<div class="task-badge" style="margin-top: 5px;">Claimed ${claimCount}x</div>` : ''}
-                            </div>
-                            <div>
+                            <div style="float: right;">
                                 <button class="btn-small ${canAfford ? 'btn-success' : 'btn-secondary'}" 
                                         onclick="claimReward('${reward.id}')" 
                                         ${!canAfford ? 'disabled' : ''}>
@@ -1907,45 +1843,12 @@
                                 </button>
                                 <button class="btn-small btn-danger" onclick="deleteReward('${reward.id}')">×</button>
                             </div>
-                        </div>
-                    `;
-                }).join('');
-            }
-
-            // Render claim history
-            renderRewardHistory();
-        }
-
-        function renderRewardHistory() {
-            const historyContainer = document.getElementById('reward-history-container');
-            const historyCount = document.getElementById('history-count');
-            
-            if (!appData.rewardHistory) {
-                appData.rewardHistory = [];
-            }
-            
-            historyCount.textContent = appData.rewardHistory.length;
-            
-            if (appData.rewardHistory.length === 0) {
-                historyContainer.innerHTML = `
-                    <div class="empty-state">
-                        <p>No rewards claimed yet.</p>
-                    </div>
-                `;
-            } else {
-                // Sort by date, most recent first
-                const sortedHistory = [...appData.rewardHistory].sort((a, b) => 
-                    new Date(b.claimedAt) - new Date(a.claimedAt)
-                );
-                
-                historyContainer.innerHTML = sortedHistory.map(entry => {
-                    const date = new Date(entry.claimedAt);
-                    const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    return `
-                        <div class="task-item">
-                            <div class="task-title">${entry.rewardName}</div>
-                            <div class="task-meta">
-                                <span class="task-badge">📅 ${dateStr}</span>
+                            <div class="reward-info">
+                                <span class="reward-name">${reward.name}</span>
+                                <div class="task-badge">🪙 ${reward.cost}</div>
+                                <div class="base-strip" onclick="toggleStrip(this)">
+                                    <span style="color: var(--text-light); font-size: 13px; font-style: italic; ">${claimHistoryText}</span>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -2002,17 +1905,8 @@
                 if (confirm(`Claim "${reward.name}" for ${reward.cost} coins?`)) {
                     appData.player.coins -= reward.cost;
                     
-                    // Add to claim history
-                    if (!appData.rewardHistory) {
-                        appData.rewardHistory = [];
-                    }
-                    appData.rewardHistory.push({
-                        id: 'claim-' + Date.now(),
-                        rewardId: reward.id,
-                        rewardName: reward.name,
-                        cost: reward.cost,
-                        claimedAt: new Date().toISOString()
-                    });
+                    reward.claimHistory = reward.claimHistory || [];
+                    reward.claimHistory.push(new Date().toISOString());
                     
                     saveData();
                     renderRewards();
