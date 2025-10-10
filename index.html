@@ -105,11 +105,6 @@
             font-weight: 600;
         }
 
-        nav button:hover {
-            background: var(--hover-bg);
-            transform: translateY(-2px);
-        }
-
         nav button.active {
             background: var(--gradient-2);
             color: white;
@@ -163,11 +158,6 @@
             transition: all 0.3s;
             font-weight: 600;
             box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);
-        }
-
-        button:hover, .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4);
         }
 
         button:active, .btn:active {
@@ -240,19 +230,37 @@
             border-radius: 16px;
             padding: 16px;
             margin-bottom: 12px;
-            cursor: move;
             transition: all 0.3s;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: stretch;
         }
 
-        .task-item:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.3);
+        .task-drag-handle {
+            width: 24px;
+            min-width: 24px;
+            margin-right: 12px;
+            margin-left: -4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            color: var(--text-light);
+            font-size: 20px;
+            user-select: none;
+        }
+
+        .task-drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .task-content {
+            flex: 1;
+            min-width: 0;
         }
 
         .task-item.dragging {
             opacity: 0.7;
-            transform: rotate(2deg);
         }
 
         .task-item.completed {
@@ -346,11 +354,6 @@
             transition: all 0.3s;
         }
 
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 35px rgba(255, 107, 157, 0.3);
-        }
-
         .stat-value {
             font-size: 40px;
             font-weight: 800;
@@ -394,11 +397,6 @@
             transition: all 0.3s;
         }
 
-        .badge-item:hover {
-            transform: scale(1.05) rotate(2deg);
-            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.3);
-        }
-
         .badge-icon {
             font-size: 36px;
             margin-bottom: 8px;
@@ -427,11 +425,6 @@
             align-items: center;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
             transition: all 0.3s;
-        }
-
-        .reward-item:hover {
-            transform: translateX(5px);
-            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.25);
         }
 
         .reward-info {
@@ -466,12 +459,6 @@
             margin-bottom: 10px;
             border: 2px solid rgba(255, 107, 157, 0.2);
             transition: all 0.3s;
-        }
-
-        .collapsible-header:hover {
-            background: linear-gradient(135deg, #FFF4C9, #FFE5F1);
-            transform: translateX(5px);
-            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.2);
         }
 
         .collapsible-content {
@@ -629,11 +616,6 @@
             padding: 0;
         }
 
-        .add-btn-right:hover {
-            transform: scale(1.15) rotate(90deg);
-            box-shadow: 0 8px 25px rgba(67, 233, 123, 0.5);
-        }
-
         .add-btn-right:active {
             transform: scale(1.05) rotate(90deg);
         }
@@ -659,11 +641,6 @@
             align-items: center;
             justify-content: center;
             padding: 0;
-        }
-
-        .floating-add-btn:hover {
-            transform: scale(1.15) rotate(90deg);
-            box-shadow: 0 12px 35px rgba(255, 107, 157, 0.5);
         }
 
         .floating-add-btn:active {
@@ -723,19 +700,11 @@
             content: "🌙";
         }
 
-        .theme-slider:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-
         /* ===== Dark Theme Overrides ===== */
         body.dark-theme .task-item {
             border: 2px solid var(--border-color);
             box-shadow: 0 2px 8px rgba(255,255,255,0.05);
             background-color: #000000;
-        }
-
-        body.dark-theme .task-item:hover {
-            box-shadow: 0 4px 12px rgba(255,255,255,0.08);
         }
 
         body.dark-theme .task-badge {
@@ -755,12 +724,6 @@
             border: 2px solid var(--border-color);
             box-shadow: 0 2px 8px rgba(255,255,255,0.05);
             background-color: #000000;
-        }
-
-        body.dark-theme .stat-card:hover,
-        body.dark-theme .badge-item:hover,
-        body.dark-theme .reward-item:hover {
-            box-shadow: 0 4px 12px rgba(255,255,255,0.08);
         }
 
         body.dark-theme .stat-value {
@@ -797,10 +760,6 @@
             border-radius: 6px;
         }
 
-        body.dark-theme nav button:hover {
-            transform: translateY(0);
-        }
-
         body.dark-theme nav button.active {
             background: var(--accent-color);
             box-shadow: none;
@@ -825,12 +784,6 @@
 
         body.dark-theme .btn-danger {
             background: var(--danger-color);
-            box-shadow: none;
-        }
-
-        body.dark-theme button:hover,
-        body.dark-theme .btn:hover {
-            opacity: 0.9;
             box-shadow: none;
         }
 
@@ -868,22 +821,10 @@
             border: none;
         }
 
-        body.dark-theme .collapsible-header:hover {
-            background: var(--border-color);
-            transform: none;
-            box-shadow: none;
-        }
-
         body.dark-theme .floating-add-btn,
         body.dark-theme .add-btn-right {
             background: var(--accent-color);
             box-shadow: 0 4px 12px rgba(255,255,255,0.15);
-        }
-
-        body.dark-theme .floating-add-btn:hover,
-        body.dark-theme .add-btn-right:hover {
-            transform: scale(1.1) translateY(-2px);
-            box-shadow: 0 6px 16px rgba(255,255,255,0.2);
         }
 
         body.dark-theme .floating-add-btn:active,
@@ -1344,21 +1285,24 @@
             const completedClass = task.completedToday ? 'completed' : '';
             
             return `
-                <div class="task-item ${completedClass}" draggable="${!task.completedToday}" data-task-id="${task.id}">
-                    <div class="task-header">
-                        <div class="task-actions">
-                            ${!task.completedToday ? `<button class="btn-small btn-success" onclick="completeTask('${task.id}')">✓</button>` : ''}
-                            <button class="btn-small btn-secondary" onclick="editTask('${task.id}')">✎</button>
-                            <button class="btn-small btn-danger" onclick="deleteTask('${task.id}')">×</button>
+                <div class="task-item ${completedClass}" data-task-id="${task.id}">
+                    ${!task.completedToday ? '<div class="task-drag-handle" draggable="true">⋮⋮</div>' : ''}
+                    <div class="task-content">
+                        <div class="task-header">
+                            <div class="task-actions">
+                                ${!task.completedToday ? `<button class="btn-small btn-success" onclick="completeTask('${task.id}')">✓</button>` : ''}
+                                <button class="btn-small btn-secondary" onclick="editTask('${task.id}')">✎</button>
+                                <button class="btn-small btn-danger" onclick="deleteTask('${task.id}')">×</button>
+                            </div>
+                            <div class="task-title">${task.title}</div>
                         </div>
-                        <div class="task-title">${task.title}</div>
-                    </div>
-                    <div class="task-meta">
-                        <span class="task-badge category-badge">${categoryName}</span>
-                        <span class="task-badge">⭐ ${task.xp} XP</span>
-                        <span class="task-badge">🪙 ${task.coins} Coins</span>
-                        ${streakText}
-                        ${recurrenceText}
+                        <div class="task-meta">
+                            <span class="task-badge category-badge">${categoryName}</span>
+                            <span class="task-badge">⭐ ${task.xp}</span>
+                            <span class="task-badge">🪙 ${task.coins}</span>
+                            ${streakText}
+                            ${recurrenceText}
+                        </div>
                     </div>
                 </div>
             `;
@@ -1366,19 +1310,23 @@
 
         // ===== DRAG AND DROP =====
         function setupDragAndDrop() {
-            const taskItems = document.querySelectorAll('.task-item[draggable="true"]');
+            const dragHandles = document.querySelectorAll('.task-drag-handle[draggable="true"]');
+            const taskItems = document.querySelectorAll('.task-item');
             
-            taskItems.forEach(item => {
+            dragHandles.forEach(handle => {
                 // Desktop drag and drop
-                item.addEventListener('dragstart', handleDragStart);
-                item.addEventListener('dragover', handleDragOver);
-                item.addEventListener('drop', handleDrop);
-                item.addEventListener('dragend', handleDragEnd);
+                handle.addEventListener('dragstart', handleDragStart);
+                handle.addEventListener('dragend', handleDragEnd);
                 
                 // Mobile touch events
-                item.addEventListener('touchstart', handleTouchStart, { passive: false });
-                item.addEventListener('touchmove', handleTouchMove, { passive: false });
-                item.addEventListener('touchend', handleTouchEnd, { passive: false });
+                handle.addEventListener('touchstart', handleTouchStart, { passive: false });
+                handle.addEventListener('touchmove', handleTouchMove, { passive: false });
+                handle.addEventListener('touchend', handleTouchEnd, { passive: false });
+            });
+
+            taskItems.forEach(item => {
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('drop', handleDrop);
             });
         }
 
@@ -1387,8 +1335,8 @@
         let touchStartY = 0;
 
         function handleDragStart(e) {
-            draggedElement = this;
-            this.classList.add('dragging');
+            draggedElement = this.parentElement; // Get the task-item parent
+            draggedElement.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
         }
 
@@ -1410,20 +1358,22 @@
         }
 
         function handleDragEnd(e) {
-            this.classList.remove('dragging');
+            if (draggedElement) {
+                draggedElement.classList.remove('dragging');
+            }
             draggedElement = null;
         }
 
         // Touch event handlers for mobile
         function handleTouchStart(e) {
-            draggedElement = this;
+            draggedElement = this.parentElement; // Get the task-item parent
             touchStartY = e.touches[0].clientY;
             touchY = touchStartY;
             
             // Add dragging class after a short delay to distinguish from scroll
             setTimeout(() => {
-                if (draggedElement === this) {
-                    this.classList.add('dragging');
+                if (draggedElement) {
+                    draggedElement.classList.add('dragging');
                 }
             }, 200);
         }
