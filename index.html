@@ -1952,9 +1952,11 @@
             const categoriesContainer = document.getElementById('categories-list');
             categoriesContainer.innerHTML = appData.categories.map(cat => `
                 <div class="task-item">
-                    <div class="flex-between">
-                        <span class="task-title">${cat.name}</span>
-                        <button class="btn-small btn-danger" onclick="deleteCategory('${cat.id}')">Delete</button>
+                    <div class="task-content" style="width: 100%;">
+                        <div class="flex-between">
+                            <span class="task-title">${cat.name}</span>
+                            <button class="btn-small btn-danger" onclick="deleteCategory('${cat.id}')">Delete</button>
+                        </div>
                     </div>
                 </div>
             `).join('');
