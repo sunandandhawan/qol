@@ -581,6 +581,10 @@
             gap: 10px;
         }
 
+        wp-40 {
+            width: 40%;
+        }
+        
         /* ===== Add Button Aligned Right ===== */
         .add-btn-container {
             display: flex;
@@ -1693,7 +1697,7 @@
                     return `
                         <div class="task-item">
                             <div class="task-title">${task.title}</div>
-                            <div class="task-meta">
+                            <div class="task-meta wp-40">
                                 <span class="task-badge category-badge">${category.name}</span>
                                 <span class="task-badge">🔥 ${task.streak}</span>
                             </div>
