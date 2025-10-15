@@ -239,8 +239,8 @@
         .task-drag-handle {
             width: 24px;
             min-width: 24px;
-            margin-right: 12px;
-            margin-left: -4px;
+            margin-right: 8px;
+            margin-left: -12px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -293,6 +293,7 @@
             font-size: 14px;
             color: var(--text-light);
             clear: both;
+            margin-top: 25px;
         }
 
         .task-badge {
@@ -663,46 +664,38 @@
         }
 
         input:checked + .theme-slider:before {
-            transform: translateX(26px);
+            transform: translateX(21px);
             content: "🌙";
         }
 
         /* ===== Dark Theme Overrides ===== */
         body.dark-theme .task-item {
             border: 2px solid var(--border-color);
-            box-shadow: 0 2px 8px rgba(255,255,255,0.05);
-            background-color: #000000;
+            box-shadow: 0 2px 8px rgba(255,255,255,0.10);
+            background-color: #181c24;
         }
 
         body.dark-theme .task-item.completed {
-            opacity: 0.7;
-            background: #333333;
+            opacity: 0.8;
+            background: linear-gradient(135deg, #2a2d3a 0%, #3a3f5a 100%);
         }
 
         body.dark-theme .task-badge {
-            background: var(--hover-bg);
-            border: 1px solid var(--border-color);
+            background: linear-gradient(135deg, #3a3f5a 0%, #5a6bff 100%);
+            border: 1.5px solid #5a6bff;
         }
 
         body.dark-theme .category-badge {
-            background: #333333;
-            color: #e0e0e0;
-            border: 1px solid #555555;
+            background: linear-gradient(135deg, #3a3f5a 0%, #5a6bff 100%);
+            color: #fff;
         }
 
         body.dark-theme .stat-card,
         body.dark-theme .badge-item,
         body.dark-theme .reward-item {
-            border: 2px solid var(--border-color);
-            box-shadow: 0 2px 8px rgba(255,255,255,0.05);
-            background-color: #000000;
-        }
-
-        body.dark-theme .stat-value {
-            background: none;
-            -webkit-background-clip: unset;
-            -webkit-text-fill-color: #cccccc;
-            background-clip: unset;
+            border: 2px solid #5a6bff;
+            box-shadow: 0 4px 16px rgba(90,107,255,0.15);
+            background-color: #181c24;
         }
 
         body.dark-theme h1 {
@@ -721,34 +714,31 @@
 
         body.dark-theme nav button {
             border: 2px solid var(--border-color);
-            border-radius: 6px;
         }
 
         body.dark-theme nav button.active {
-            background: var(--accent-color);
-            box-shadow: none;
+            background: linear-gradient(135deg, #5a6bff 0%, #ff6b9d 100%);
+            box-shadow: 0 2px 8px rgba(255,107,157,0.25);
         }
 
         body.dark-theme button,
         body.dark-theme .btn {
-            background: var(--accent-color);
-            box-shadow: none;
-            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(255,107,157,0.25);
         }
 
         body.dark-theme .btn-secondary {
-            background: var(--text-light);
-            box-shadow: none;
+            background: linear-gradient(135deg, #6bcf7f 0%, #5a6bff 100%);
+            box-shadow: 0 2px 8px rgba(90,107,255,0.15);
         }
 
         body.dark-theme .btn-success {
-            background: var(--success-color);
-            box-shadow: none;
+            background: linear-gradient(135deg, #6bcf7f 0%, #43e97b 100%);
+            box-shadow: 0 2px 8px rgba(67,233,123,0.15);
         }
 
         body.dark-theme .btn-danger {
-            background: var(--danger-color);
-            box-shadow: none;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff6b9d 100%);
+            box-shadow: 0 2px 8px rgba(255,107,157,0.15);
         }
 
         body.dark-theme .modal-content {
@@ -786,8 +776,8 @@
         }
 
         body.dark-theme .add-btn-right {
-            background: var(--accent-color);
-            box-shadow: 0 4px 12px rgba(255,255,255,0.15);
+            background: linear-gradient(135deg, #5a6bff 0%, #ff6b9d 100%);
+            box-shadow: 0 4px 16px rgba(255,107,157,0.25);
         }
 
         body.dark-theme .add-btn-right:active {
@@ -925,7 +915,7 @@
                 </div>
             </div>
 
-            <button onclick="saveSettings()" class="mt-20">Save Settings</button>
+            <button onclick="saveSettings()" class="mt-20 btn-secondary">Save Settings</button>
 
             <!-- Data Management -->
             <h2 class="mt-20">Data Management</h2>
