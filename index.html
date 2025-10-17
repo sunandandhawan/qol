@@ -586,6 +586,10 @@
             width: 40%;
         }
         
+        .ps-rl {
+            position: relative;
+        }
+
         /* ===== Add Button Aligned Right ===== */
         .add-btn-container {
             display: flex;
@@ -793,6 +797,54 @@
             background: linear-gradient(90deg, #444444, #666666);
             color: #e0e0e0;
         }
+
+        /* ===== Toast Notifications ===== */
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            background: linear-gradient(135deg, #43E97B 0%, #38F9D7 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            box-shadow: 0 4px 16px rgba(67, 233, 123, 0.3);
+            z-index: 1000;
+            transform: translate(-50%, 100%);
+            opacity: 0;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            max-width: 300px;
+        }
+
+        .toast.show {
+            transform: translate(-50%, 0);
+            opacity: 1;
+        }
+
+        .toast.hide {
+            transform: translate(-50%, 100%);
+            opacity: 0;
+        }
+
+        body.dark-theme .toast {
+            background: linear-gradient(135deg, #6bcf7f 0%, #43e97b 100%);
+            box-shadow: 0 4px 16px rgba(67, 233, 123, 0.2);
+        }
+
+        #clear-search-btn
+        {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%); 
+            background: transparent;
+            border: none;
+            color: var(--text-light); 
+            font-size: 20px;
+            padding: 5px 10px;
+            cursor: pointer;
+            box-shadow: none;
+        }
     </style>
 </head>
 <body>
@@ -872,11 +924,12 @@
 
         <div id="quests" class="screen">
             <h1>All Quests</h1>
-            
+
             <!-- Search Bar -->
-            <div class="mb-20">
+            <div class="ps-rl mb-20">
                 <input type="text" id="quest-search" placeholder="🔍 Search or Add tasks..." 
                        oninput="filterQuests()" style="margin-bottom: 0;">
+                <button onclick="resetQuestFilter()" id="clear-search-btn">×</button>
             </div>
 
             <!-- Quests List -->
@@ -1186,18 +1239,10 @@
                     <div class="task-content">
                         <div class="task-header">
                             <div class="task-actions">
+                                ${recurrenceText}
                                 <button class="btn-small btn-success" onclick="completeTask('${task.id}')">✓</button>
-                                <button class="btn-small btn-secondary" onclick="editTask('${task.id}')">✎</button>
-                                <button class="btn-small btn-danger" onclick="deleteTask('${task.id}')">×</button>
                             </div>
                             <div class="task-title">${task.title}</div>
-                        </div>
-                        <div class="task-meta">
-                            <span class="task-badge category-badge">${categoryName}</span>
-                            <span class="task-badge">⭐ ${task.xp}</span>
-                            <span class="task-badge">🪙 ${task.coins}</span>
-                            ${streakText}
-                            ${recurrenceText}
                         </div>
                     </div>
                 </div>
@@ -1537,11 +1582,11 @@
                 updateCategoryLevel(category);
             }
             
-            // Check for level up
             checkLevelUp();
             
-            // Check for badges
             checkBadges();
+            
+            showToast(`+${task.xp} ⭐ +${task.coins} 🪙`);
             
             saveData();
             renderDayView();
@@ -1718,8 +1763,13 @@
         // ===== QUEST FILTER =====
         let questSearchTerm = '';
 
+        function resetQuestFilter() {
+            document.getElementById('quest-search').value = '';
+            questSearchTerm = '';
+        }
+
         function filterQuests() {
-            questSearchTerm = document.getElementById('quest-search').value.toLowerCase();
+            questSearchTerm = document.getElementById('quest-search').value;
             renderQuests();
         }
 
@@ -1735,8 +1785,10 @@
                 filteredTasks = filteredTasks.filter(task => {
                     const category = appData.categories.find(c => c.id === task.category);
                     const categoryName = category ? category.name.toLowerCase() : '';
-                    return task.title.toLowerCase().includes(questSearchTerm) || 
-                           categoryName.includes(questSearchTerm);
+                    return task.title.toLowerCase().includes(questSearchTerm.toLowerCase()) || 
+                           categoryName.includes(questSearchTerm.toLowerCase()) ||
+                           (task.lastCompleted && task.lastCompleted.includes(questSearchTerm)) ||
+                           (task.completedHistory && task.completedHistory.some(date => date.includes(questSearchTerm)));
                 });
             }
             
@@ -1762,7 +1814,7 @@
                 
                 if (task.lastCompleted) {
                     const date = new Date(task.lastCompleted);
-                    const completedDates = [...new Set((task.completedHistory || [task.lastCompleted]).map(d => d.split('T')[0]))].join(', ');
+                    const completedDates = [...new Set((task.completedHistory || [task.lastCompleted]).map(d => d.split('T')[0]).sort().reverse())].join(', ');
                     lastCompletedText = `Completions: ${completedDates}`;
                 }
                 
@@ -1826,7 +1878,7 @@
             } else {
                 container.innerHTML = appData.rewards.map(reward => {
                     const canAfford = appData.player.coins >= reward.cost;
-                    const claimHistoryText = reward.claimHistory ? `Claims: ${reward.claimHistory.map(d => d.split('T')[0]).join(', ')}`: 'Never claimed';
+                    const claimHistoryText = reward.claimHistory ? `Claims: ${reward.claimHistory.map(d => d.split('T')[0]).sort().reverse().join(', ')}`: 'Never claimed';
                     return `
                         <div class="reward-item">
                             <div style="float: right;">
@@ -2100,6 +2152,36 @@
             }
         }
 
+        // ===== TOAST NOTIFICATIONS =====
+        function showToast(message, duration = 3000) {
+            // Remove any existing toast
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+
+            // Create new toast
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            // Show toast
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+
+            // Hide and remove toast
+            setTimeout(() => {
+                toast.classList.add('hide');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, duration);
+        }
+
         // ===== UTILITIES =====
         function toggleCollapsible(id) {
             const content = document.getElementById(id + '-content');
@@ -2114,34 +2196,6 @@
             }
         }
 
-
-
-        // Add animations
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-            }
-            
-            @keyframes slideOut {
-                from {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-                to {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
-            }
-        `;
-        document.head.appendChild(style);
 
         // ===== SERVICE WORKER =====
         function registerServiceWorker() {
