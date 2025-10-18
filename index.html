@@ -1240,6 +1240,7 @@
                     <div class="task-content">
                         <div class="task-header">
                             <div class="task-actions">
+                                ${streakText}
                                 ${recurrenceText}
                                 <button class="btn-small btn-success" onclick="completeTask('${task.id}')">✓</button>
                             </div>
@@ -1826,11 +1827,6 @@
                     recurrenceInfo = `<span class="task-badge">🔄 ${task.timesPerDay}x</span>`;
                 }
                 
-                let streakBadge = '';
-                if (task.streak > 0) {
-                    streakBadge = `<span class="task-badge">🔥 ${task.streak}</span>`;
-                }
-                
                 const createdDate = new Date(task.createdAt).toLocaleDateString();
                 
                 return `
@@ -1847,7 +1843,6 @@
                             <div class="task-meta">
                                 <span class="task-badge category-badge">${categoryName}</span>
                                 ${recurrenceInfo}
-                                ${streakBadge}
                                 <span class="task-badge">⭐ ${task.xp}</span>
                                 <span class="task-badge">🪙 ${task.coins}</span>
                             </div>
