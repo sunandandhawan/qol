@@ -1688,9 +1688,9 @@
         // ===== DASHBOARD =====
         function renderDashboard() {
             // Player stats
-            document.getElementById('player-level').textContent = "⚔️ " + appData.player.level;
-            document.getElementById('player-xp').textContent = "⭐ " + appData.player.xp;
-            document.getElementById('player-coins').textContent = "🪙 " + appData.player.coins;
+            document.getElementById('player-level').textContent = "⚔️ <br/>" + appData.player.level;
+            document.getElementById('player-xp').textContent = "⭐ <br/>" + appData.player.xp;
+            document.getElementById('player-coins').textContent = "🪙 <br/>" + appData.player.coins;
             
             // Level progress
             const currentLevelXp = appData.player.xp;
