@@ -878,19 +878,22 @@
             <!-- Player Stats -->
             <div class="stats-grid">
                 <div class="stat-card">
+                    <span class="stat-value">⚔️</span>
                     <span class="stat-value" id="player-level">1</span>
                     <span class="stat-label">Level</span>
                 </div>
                 <div class="stat-card">
+                    <span class="stat-value">⭐</span>
                     <span class="stat-value" id="player-xp">0</span>
                     <span class="stat-label">Total XP</span>
                 </div>
                 <div class="stat-card">
+                    <span class="stat-value">🪙</span>
                     <span class="stat-value" id="player-coins">0</span>
                     <span class="stat-label">Coins</span>
                 </div>
                 <div class="stat-card">
-                    <span class="stat-value" onclick="switchScreen('rewards')">🏆</span>
+                    <span class="stat-value" onclick="switchScreen('rewards')" style="font-size: 80px;">🏆</span>
                     <span class="stat-label">Rewards</span>
                 </div>
             </div>
@@ -1688,9 +1691,9 @@
         // ===== DASHBOARD =====
         function renderDashboard() {
             // Player stats
-            document.getElementById('player-level').textContent = "⚔️ <br/>" + appData.player.level;
-            document.getElementById('player-xp').textContent = "⭐ <br/>" + appData.player.xp;
-            document.getElementById('player-coins').textContent = "🪙 <br/>" + appData.player.coins;
+            document.getElementById('player-level').textContent = appData.player.level;
+            document.getElementById('player-xp').textContent = appData.player.xp;
+            document.getElementById('player-coins').textContent = appData.player.coins;
             
             // Level progress
             const currentLevelXp = appData.player.xp;
