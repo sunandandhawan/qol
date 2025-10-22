@@ -1888,16 +1888,17 @@
                     return `
                         <div class="reward-item">
                             <div style="float: right;">
+                                <div class="task-badge">🪙 ${reward.cost}</div>
                                 <button class="btn-small ${canAfford ? 'btn-success' : 'btn-secondary'}" 
                                         onclick="claimReward('${reward.id}')" 
                                         ${!canAfford ? 'disabled' : ''}>
                                     Claim
                                 </button>
+                                <button class="btn-small btn-secondary" onclick="openRewardModal('${reward.id}')">✎</button>
                                 <button class="btn-small btn-danger" onclick="deleteReward('${reward.id}')">×</button>
                             </div>
                             <div class="reward-info">
                                 <span class="reward-name">${reward.name}</span>
-                                <div class="task-badge">🪙 ${reward.cost}</div>
                                 <div class="base-strip" onclick="toggleStrip(this)">
                                     <span style="color: var(--text-light); font-size: 13px; font-style: italic; ">${claimHistoryText}</span>
                                 </div>
@@ -1908,11 +1909,33 @@
             }
         }
 
-        function openRewardModal() {
+        function openRewardModal(rewardId = null) {
             const modal = document.getElementById('reward-modal');
-            document.getElementById('reward-id').value = '';
-            document.getElementById('reward-name').value = '';
-            document.getElementById('reward-cost').value = '50';
+
+            if (rewardId) {
+                // Edit mode: pre-fill modal with reward data
+                const reward = appData.rewards.find(r => r.id === rewardId);
+                if (reward) {
+                    document.getElementById('reward-id').value = reward.id;
+                    document.getElementById('reward-name').value = reward.name;
+                    document.getElementById('reward-cost').value = reward.cost;
+                    // Update modal title
+                    modal.querySelector('.modal-title').textContent = 'Edit Reward';
+                } else {
+                    // Fallback to add mode if reward not found
+                    document.getElementById('reward-id').value = '';
+                    document.getElementById('reward-name').value = '';
+                    document.getElementById('reward-cost').value = '50';
+                    modal.querySelector('.modal-title').textContent = 'Add Reward';
+                }
+            } else {
+                // Add mode
+                document.getElementById('reward-id').value = '';
+                document.getElementById('reward-name').value = '';
+                document.getElementById('reward-cost').value = '50';
+                modal.querySelector('.modal-title').textContent = 'Add Reward';
+            }
+
             modal.classList.add('active');
         }
 
@@ -1921,21 +1944,33 @@
         }
 
         function saveReward() {
+            const id = document.getElementById('reward-id').value;
             const name = document.getElementById('reward-name').value.trim();
             const cost = parseInt(document.getElementById('reward-cost').value);
-            
+
             if (!name) {
                 alert('Please enter a reward name');
                 return;
             }
-            
-            appData.rewards.push({
-                id: 'reward-' + Date.now(),
-                name,
-                cost,
-                createdAt: new Date().toISOString()
-            });
-            
+
+            if (id) {
+                // Update existing reward
+                const reward = appData.rewards.find(r => r.id === id);
+                if (reward) {
+                    reward.name = name;
+                    reward.cost = cost;
+                    reward.updatedAt = new Date().toISOString();
+                }
+            } else {
+                // Create new reward
+                appData.rewards.push({
+                    id: 'reward-' + Date.now(),
+                    name,
+                    cost,
+                    createdAt: new Date().toISOString()
+                });
+            }
+
             saveData();
             closeRewardModal();
             renderRewards();
