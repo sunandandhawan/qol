@@ -35,9 +35,7 @@
             --shadow: 0 4px 12px rgba(255, 107, 157, 0.15);
             --gradient-1: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
             --gradient-2: linear-gradient(135deg, #F093FB 0%, #F5576C 100%);
-            --gradient-3: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
             --gradient-4: linear-gradient(135deg, #43E97B 0%, #38F9D7 100%);
-            --gradient-5: linear-gradient(135deg, #FA709A 0%, #FEE140 100%);
         }
 
         html, body {
@@ -1198,7 +1196,9 @@
         }
 
         function getTodaysTasks() {
+            // Only get parent tasks (non-sub-quests) for filtering
             return appData.tasks
+                .filter(task => !task.parentId) // Exclude sub-quests from main list
                 .filter(task => {
                     // Exclude completed one-time tasks
                     if (task.recurrence === 'once' && task.completed) return false;
@@ -1225,9 +1225,6 @@
         }
 
         function renderTaskItem(task) {
-            const category = appData.categories.find(c => c.id === task.category);
-            const categoryName = category ? category.name : 'Unknown';
-            
             let streakText = '';
             if (task.recurrence === 'daily' && task.streak > 0) {
                 streakText = `<span class="task-badge">🔥 ${task.streak}</span>`;
@@ -1243,20 +1240,53 @@
                 recurrenceText = `<span class="task-badge">🔄 ${completed}/${total}</span>`;
             }
             
+            // Get sub-quests for this task that should show in today view
+            // Sub-quests are always one-time tasks
+            const subQuests = appData.tasks.filter(subTask => {
+                if (subTask.parentId !== task.id) return false;
+                // Only show incomplete sub-quests
+                return !subTask.completed;
+            });
+            
+            const hasSubQuests = subQuests.length > 0;
+            // Default to collapsed if not explicitly expanded
+            const isCollapsed = hasSubQuests && !collapsedQuests.has('expanded-' + task.id);
+            
+            let subQuestsHtml = '';
+            if (hasSubQuests && !isCollapsed) {
+                subQuestsHtml = subQuests.map(subTask => {
+                    return `
+                        <div class="task-item sub-quest-item" data-task-id="${subTask.id}" data-parent-id="${task.id}" style="margin-left: 40px; border-left: 3px solid var(--accent-color); opacity: 0.9;">
+                            <div class="task-drag-handle" draggable="true">⋮⋮</div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="task-actions">
+                                        <button class="btn-small btn-success" onclick="completeTask('${subTask.id}')">✓</button>
+                                    </div>
+                                    <div class="task-title">↳ ${subTask.title}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
             return `
                 <div class="task-item" data-task-id="${task.id}">
                     <div class="task-drag-handle" draggable="true">⋮⋮</div>
                     <div class="task-content">
                         <div class="task-header">
                             <div class="task-actions">
+                                ${hasSubQuests ? `<button class="btn-small btn-secondary" onclick="toggleSubQuests('${task.id}')">${isCollapsed ? '▶' : '▼'}</button>` : ''}
                                 ${streakText}
                                 ${recurrenceText}
                                 <button class="btn-small btn-success" onclick="completeTask('${task.id}')">✓</button>
                             </div>
-                            <div class="task-title">${task.title}</div>
+                            <div class="task-title">${task.title} ${hasSubQuests ? `<span style="font-size: 12px; color: var(--text-light);">(${subQuests.length})</span>` : ''}</div>
                         </div>
                     </div>
                 </div>
+                ${subQuestsHtml}
             `;
         }
 
@@ -1293,22 +1323,76 @@
             e.dataTransfer.effectAllowed = 'move';
             // Set the drag image to the entire task item
             e.dataTransfer.setDragImage(taskItem, e.offsetX, e.offsetY);
+            
+            // If a parent task is being dragged, hide its sub-quests visually
+            if (!taskItem.classList.contains('sub-quest-item')) {
+                const taskId = taskItem.dataset.taskId;
+                if (taskId) {
+                    const subQuests = document.querySelectorAll(`.sub-quest-item[data-parent-id="${taskId}"]`);
+                    subQuests.forEach(sq => sq.style.display = 'none');
+                }
+            }
         }
 
         function handleDragOver(e) {
             e.preventDefault();
+            
+            if (!draggedElement) return;
+            
+            const draggedIsSubQuest = draggedElement.classList.contains('sub-quest-item');
+            const targetItem = e.currentTarget;
+            const targetIsSubQuest = targetItem.classList.contains('sub-quest-item');
+            
+            // Don't allow mixing parent tasks and sub-quests
+            if (draggedIsSubQuest !== targetIsSubQuest) {
+                e.dataTransfer.dropEffect = 'none';
+                return;
+            }
+            
+            // If both are sub-quests, they must have the same parent
+            if (draggedIsSubQuest && targetIsSubQuest) {
+                const draggedParent = draggedElement.dataset.parentId;
+                const targetParent = targetItem.dataset.parentId;
+                if (draggedParent !== targetParent) {
+                    e.dataTransfer.dropEffect = 'none';
+                    return;
+                }
+            }
+            
             e.dataTransfer.dropEffect = 'move';
             
-            const afterElement = getDragAfterElement(e.currentTarget.parentElement, e.clientY);
+            const container = e.currentTarget.parentElement;
+            const afterElement = getDragAfterElement(container, e.clientY, draggedIsSubQuest, draggedElement.dataset.parentId);
             if (afterElement == null) {
-                e.currentTarget.parentElement.appendChild(draggedElement);
+                // Only append if we're in the right context
+                if (draggedIsSubQuest) {
+                    // Find the last sub-quest of the same parent
+                    const lastSiblingSubQuest = Array.from(container.querySelectorAll(`.sub-quest-item[data-parent-id="${draggedElement.dataset.parentId}"]`))
+                        .filter(el => el !== draggedElement)
+                        .pop();
+                    if (lastSiblingSubQuest) {
+                        lastSiblingSubQuest.after(draggedElement);
+                    }
+                } else {
+                    container.appendChild(draggedElement);
+                }
             } else {
-                e.currentTarget.parentElement.insertBefore(draggedElement, afterElement);
+                container.insertBefore(draggedElement, afterElement);
             }
         }
 
         function handleDrop(e) {
             e.preventDefault();
+            
+            // If a parent task was dragged, collapse it to keep sub-quests together
+            if (draggedElement && !draggedElement.classList.contains('sub-quest-item')) {
+                const taskId = draggedElement.dataset.taskId;
+                if (taskId) {
+                    // Remove from expanded set to collapse it
+                    collapsedQuests.delete('expanded-' + taskId);
+                }
+            }
+            
             reorderTasks();
         }
 
@@ -1329,6 +1413,15 @@
             setTimeout(() => {
                 if (draggedElement) {
                     draggedElement.classList.add('dragging');
+                    
+                    // If a parent task is being dragged, hide its sub-quests visually
+                    if (!draggedElement.classList.contains('sub-quest-item')) {
+                        const taskId = draggedElement.dataset.taskId;
+                        if (taskId) {
+                            const subQuests = document.querySelectorAll(`.sub-quest-item[data-parent-id="${taskId}"]`);
+                            subQuests.forEach(sq => sq.style.display = 'none');
+                        }
+                    }
                 }
             }, 200);
         }
@@ -1345,10 +1438,23 @@
             draggedElement.classList.add('dragging');
             
             const container = draggedElement.parentElement;
-            const afterElement = getDragAfterElement(container, touchY);
+            const draggedIsSubQuest = draggedElement.classList.contains('sub-quest-item');
+            const parentId = draggedIsSubQuest ? draggedElement.dataset.parentId : null;
+            const afterElement = getDragAfterElement(container, touchY, draggedIsSubQuest, parentId);
             
             if (afterElement == null) {
-                container.appendChild(draggedElement);
+                // Only append if we're in the right context
+                if (draggedIsSubQuest && parentId) {
+                    // Find the last sub-quest of the same parent
+                    const lastSiblingSubQuest = Array.from(container.querySelectorAll(`.sub-quest-item[data-parent-id="${parentId}"]`))
+                        .filter(el => el !== draggedElement)
+                        .pop();
+                    if (lastSiblingSubQuest) {
+                        lastSiblingSubQuest.after(draggedElement);
+                    }
+                } else if (!draggedIsSubQuest) {
+                    container.appendChild(draggedElement);
+                }
             } else {
                 container.insertBefore(draggedElement, afterElement);
             }
@@ -1361,6 +1467,15 @@
             
             // Only reorder if actually dragged
             if (Math.abs(touchY - touchStartY) > 10) {
+                // If a parent task was dragged, collapse it to keep sub-quests together
+                if (!draggedElement.classList.contains('sub-quest-item')) {
+                    const taskId = draggedElement.dataset.taskId;
+                    if (taskId) {
+                        // Remove from expanded set to collapse it
+                        collapsedQuests.delete('expanded-' + taskId);
+                    }
+                }
+                
                 reorderTasks();
             }
             
@@ -1369,8 +1484,18 @@
             touchStartY = 0;
         }
 
-        function getDragAfterElement(container, y) {
-            const draggableElements = [...container.querySelectorAll('.task-item:not(.dragging)')];
+        function getDragAfterElement(container, y, isSubQuest = false, parentId = null) {
+            let selector = '.task-item:not(.dragging)';
+            
+            // If dragging a sub-quest, only consider other sub-quests with same parent
+            if (isSubQuest && parentId) {
+                selector = `.task-item.sub-quest-item[data-parent-id="${parentId}"]:not(.dragging)`;
+            } else if (!isSubQuest) {
+                // If dragging a parent task, only consider other parent tasks
+                selector = '.task-item:not(.sub-quest-item):not(.dragging)';
+            }
+            
+            const draggableElements = [...container.querySelectorAll(selector)];
             
             return draggableElements.reduce((closest, child) => {
                 const box = child.getBoundingClientRect();
@@ -1385,30 +1510,63 @@
         }
 
         function reorderTasks() {
-            const taskElements = document.querySelectorAll('#tasks-container .task-item');
-            const newOrder = Array.from(taskElements).map(el => el.dataset.taskId);
+            const container = document.getElementById('tasks-container');
+            
+            // Get all parent tasks in their new order (including ones with hidden sub-quests)
+            const parentTaskElements = container.querySelectorAll('.task-item:not(.sub-quest-item)');
+            const parentOrder = Array.from(parentTaskElements).map(el => el.dataset.taskId);
+            
+            // Get sub-quests grouped by parent (get all, not just visible ones)
+            const subQuestsByParent = {};
+            
+            // Get all sub-quests from data, not just from DOM (some might be hidden)
+            appData.tasks.forEach(task => {
+                if (task.parentId) {
+                    if (!subQuestsByParent[task.parentId]) {
+                        subQuestsByParent[task.parentId] = [];
+                    }
+                    subQuestsByParent[task.parentId].push(task.id);
+                }
+            });
             
             // Get tasks shown in Today view vs all others
             const todaysTaskIds = new Set(getTodaysTasks().map(t => t.id));
-            const tasksNotInToday = appData.tasks.filter(t => !todaysTaskIds.has(t.id));
+            const visibleTaskIds = new Set([...parentOrder, ...Object.values(subQuestsByParent).flat()]);
+            const tasksNotInToday = appData.tasks.filter(t => !visibleTaskIds.has(t.id));
             
-            // Create ordered list from visible tasks
-            const orderedTasks = newOrder
-                .map(id => appData.tasks.find(t => t.id === id))
-                .filter(t => t);
+            // Create ordered list: first parent tasks, then their sub-quests
+            const orderedTasks = [];
+            let orderIndex = 0;
             
-            // Update order property
-            orderedTasks.forEach((task, index) => {
-                task.order = index;
+            parentOrder.forEach(parentId => {
+                const parentTask = appData.tasks.find(t => t.id === parentId);
+                if (parentTask) {
+                    parentTask.order = orderIndex++;
+                    orderedTasks.push(parentTask);
+                    
+                    // Add sub-quests in their order (preserved from data)
+                    if (subQuestsByParent[parentId]) {
+                        subQuestsByParent[parentId].forEach(subId => {
+                            const subTask = appData.tasks.find(t => t.id === subId);
+                            if (subTask) {
+                                subTask.order = orderIndex++;
+                                orderedTasks.push(subTask);
+                            }
+                        });
+                    }
+                }
             });
             
             // Combine: ordered visible tasks + tasks not shown today
             appData.tasks = [...orderedTasks, ...tasksNotInToday];
             saveData();
+            
+            // Re-render to show collapsed state
+            renderDayView();
         }
 
         // ===== TASK MANAGEMENT =====
-        function openTaskModal(taskId = null, taskTitle = '') {
+        function openTaskModal(taskId = null, taskTitle = '', parentId = null) {
             const modal = document.getElementById('task-modal');
             const title = document.getElementById('task-modal-title');
             
@@ -1418,26 +1576,70 @@
                 `<option value="${cat.id}">${cat.name}</option>`
             ).join('');
             
+            // Get the label elements
+            const categoryLabel = Array.from(document.querySelectorAll('label')).find(label => 
+                label.nextElementSibling && label.nextElementSibling.id === 'task-category'
+            );
+            
+            const recurrenceSelect = document.getElementById('task-recurrence');
+            const recurrenceLabel = Array.from(document.querySelectorAll('label')).find(label => 
+                label.nextElementSibling && label.nextElementSibling.id === 'task-recurrence'
+            );
+            
+            // Store parentId in a hidden field
+            let parentField = document.getElementById('task-parent-id');
+            if (!parentField) {
+                parentField = document.createElement('input');
+                parentField.type = 'hidden';
+                parentField.id = 'task-parent-id';
+                modal.querySelector('.modal-content').appendChild(parentField);
+            }
+            parentField.value = parentId || '';
+            
             if (taskId) {
                 // Edit mode
                 const task = appData.tasks.find(t => t.id === taskId);
-                title.textContent = 'Edit Task';
+                title.textContent = task.parentId ? 'Edit Sub-Quest' : 'Edit Task';
                 document.getElementById('task-id').value = task.id;
                 document.getElementById('task-title').value = task.title;
-                document.getElementById('task-category').value = task.category;
-                document.getElementById('task-recurrence').value = task.recurrence;
+                document.getElementById('task-category').value = task.category || '';
+                document.getElementById('task-recurrence').value = task.recurrence || 'once';
                 document.getElementById('task-xp').value = task.xp;
                 document.getElementById('task-coins').value = task.coins;
                 document.getElementById('task-times-per-day').value = task.timesPerDay || 3;
+                // Hide category and recurrence for sub-quests
+                if (task.parentId) {
+                    categorySelect.style.display = 'none';
+                    if (categoryLabel) categoryLabel.style.display = 'none';
+                    recurrenceSelect.style.display = 'none';
+                    if (recurrenceLabel) recurrenceLabel.style.display = 'none';
+                } else {
+                    categorySelect.style.display = 'block';
+                    if (categoryLabel) categoryLabel.style.display = 'block';
+                    recurrenceSelect.style.display = 'block';
+                    if (recurrenceLabel) recurrenceLabel.style.display = 'block';
+                }
             } else {
                 // Add mode
-                title.textContent = 'Add Task';
+                title.textContent = parentId ? 'Add Sub-Quest' : 'Add Task';
                 document.getElementById('task-id').value = '';
                 document.getElementById('task-title').value = taskTitle;
                 document.getElementById('task-recurrence').value = 'once';
                 document.getElementById('task-xp').value = appData.settings.defaultXp;
                 document.getElementById('task-coins').value = appData.settings.defaultCoins;
                 document.getElementById('task-times-per-day').value = 3;
+                // Hide category and recurrence for sub-quests
+                if (parentId) {
+                    categorySelect.style.display = 'none';
+                    if (categoryLabel) categoryLabel.style.display = 'none';
+                    recurrenceSelect.style.display = 'none';
+                    if (recurrenceLabel) recurrenceLabel.style.display = 'none';
+                } else {
+                    categorySelect.style.display = 'block';
+                    if (categoryLabel) categoryLabel.style.display = 'block';
+                    recurrenceSelect.style.display = 'block';
+                    if (recurrenceLabel) recurrenceLabel.style.display = 'block';
+                }
             }
             
             handleRecurrenceChange();
@@ -1461,6 +1663,7 @@
             const recurrence = document.getElementById('task-recurrence').value;
             const xp = parseInt(document.getElementById('task-xp').value);
             const coins = parseInt(document.getElementById('task-coins').value);
+            const parentId = document.getElementById('task-parent-id')?.value || null;
             
             if (!title) {
                 alert('Please enter a task title');
@@ -1471,7 +1674,9 @@
                 // Update existing task - preserve completion data
                 const task = appData.tasks.find(t => t.id === taskId);
                 task.title = title;
-                task.category = category;
+                if (!task.parentId) { // Only update category for non-sub-quests
+                    task.category = category;
+                }
                 task.recurrence = recurrence;
                 task.xp = xp;
                 task.coins = coins;
@@ -1488,15 +1693,16 @@
                 const taskData = {
                     id: 'task-' + Date.now(),
                     title,
-                    category,
-                    recurrence,
+                    category: parentId ? null : category, // Sub-quests don't have categories
+                    recurrence: parentId ? 'once' : recurrence, // Sub-quests are always one-time
                     xp,
                     coins,
                     lastCompleted: null,
                     streak: 0,
                     completed: false,
                     createdAt: new Date().toISOString(),
-                    order: appData.tasks.length
+                    order: appData.tasks.length,
+                    parentId: parentId || null
                 };
                 
                 // Add times per day for multiple recurrence
@@ -1530,7 +1736,10 @@
 
         function deleteTask(taskId) {
             if (confirm('Are you sure you want to delete this task?')) {
-                appData.tasks = appData.tasks.filter(t => t.id !== taskId);
+                // Also delete all sub-quests if this is a parent task
+                const subQuestIds = appData.tasks.filter(t => t.parentId === taskId).map(t => t.id);
+                appData.tasks = appData.tasks.filter(t => t.id !== taskId && !subQuestIds.includes(t.id));
+                
                 saveData();
                 switchScreen(document.querySelector('.screen.active').id);
             }
@@ -1539,6 +1748,18 @@
         function completeTask(taskId) {
             const task = appData.tasks.find(t => t.id === taskId);
             if (!task) return;
+            
+            // Check if this task has incomplete sub-quests (only for parent tasks)
+            if (!task.parentId) {
+                const incompleteSubQuests = appData.tasks.filter(t => 
+                    t.parentId === taskId && !t.completed
+                );
+                
+                if (incompleteSubQuests.length > 0) {
+                    alert(`Complete all sub-quests first! (${incompleteSubQuests.length} remaining)`);
+                    return;
+                }
+            }
             
             // Handle multiple per day tasks
             if (task.recurrence === 'multiple') {
@@ -1586,11 +1807,13 @@
             appData.player.xp += task.xp;
             appData.player.coins += task.coins;
             
-            // Update category XP
-            const category = appData.categories.find(c => c.id === task.category);
-            if (category) {
-                category.xp += task.xp;
-                updateCategoryLevel(category);
+            // Update category XP (only for non-sub-quests)
+            if (task.category) {
+                const category = appData.categories.find(c => c.id === task.category);
+                if (category) {
+                    category.xp += task.xp;
+                    updateCategoryLevel(category);
+                }
             }
             
             checkLevelUp();
@@ -1773,6 +1996,7 @@
 
         // ===== QUEST FILTER =====
         let questSearchTerm = '';
+        let collapsedQuests = new Set(); // Track which parent quests are collapsed
 
         function resetQuestFilter() {
             document.getElementById('quest-search').value = '';
@@ -1792,11 +2016,11 @@
                 questSearchTerm = searchInput.value;
             }
             
-            // Calculate stats
-            const totalQuests = appData.tasks.length;
+            // Calculate stats - exclude sub-quests from total count
+            const totalQuests = appData.tasks.filter(t => !t.parentId).length;
             
-            // Filter tasks based on current filter and search
-            let filteredTasks = [...appData.tasks];
+            // Filter tasks - exclude sub-quests from main list
+            let filteredTasks = appData.tasks.filter(t => !t.parentId);
             
             // Apply search
             if (questSearchTerm) {
@@ -1843,18 +2067,57 @@
                     recurrenceInfo = `<span class="task-badge">🔄 ${task.timesPerDay}x</span>`;
                 }
                 
-                const createdDate = new Date(task.createdAt).toLocaleDateString();
+                // Get sub-quests for this task
+                const subQuests = appData.tasks.filter(t => t.parentId === task.id);
+                const hasSubQuests = subQuests.length > 0;
+                // Default to collapsed if not explicitly expanded
+                const isCollapsed = hasSubQuests && !collapsedQuests.has('expanded-' + task.id);
+                
+                let subQuestsHtml = '';
+                if (hasSubQuests && !isCollapsed) {
+                    subQuestsHtml = subQuests.map(subTask => {
+                        let subLastCompletedText = 'Never completed';
+                        if (subTask.lastCompleted) {
+                            const subCompletedDates = [...new Set((subTask.completedHistory || [subTask.lastCompleted]).map(d => d.split('T')[0]).sort().reverse())].join(', ');
+                            subLastCompletedText = `Completions: ${subCompletedDates}`;
+                        }
+                        
+                        return `
+                            <div class="task-item" style="margin-left: 30px; border-left: 3px solid var(--accent-color); opacity: 0.9;">
+                                <div class="task-content" style="width: 100%;">
+                                    <div class="task-header">
+                                        <div class="task-actions">
+                                            ${subTask.completed ? '<button class="btn-small btn-secondary" onclick="reDoTask(\'' + subTask.id + '\')">↻</button>' : ''}
+                                            <button class="btn-small btn-secondary" onclick="editTask('${subTask.id}')">✎</button>
+                                            <button class="btn-small btn-danger" onclick="deleteTask('${subTask.id}')">×</button>
+                                        </div>
+                                        <div class="task-title">↳ ${subTask.title}</div>
+                                    </div>
+                                    <div class="task-meta">
+                                        <span class="task-badge">⭐ ${subTask.xp}</span>
+                                        <span class="task-badge">🪙 ${subTask.coins}</span>
+                                    </div>
+                                    <div class="base-strip" onclick="toggleStrip(this)">
+                                        <span style="color: var(--text-light); font-size: 13px; font-style: italic;">${subLastCompletedText}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
                 
                 return `
                     <div class="task-item">
                         <div class="task-content" style="width: 100%;">
                             <div class="task-header">
                                 <div class="task-actions">
+                                    ${hasSubQuests ? `<button class="btn-small btn-secondary" onclick="toggleSubQuests('${task.id}')">${isCollapsed ? '▶' : '▼'}</button>` : ''}
                                     ${task.completed ? '<button class="btn-small btn-secondary" onclick="reDoTask(\'' + task.id + '\')">↻</button>' : ''}
+                                    <button class="btn-small btn-secondary" onclick="openTaskModal(null, '', '${task.id}')">+</button>
                                     <button class="btn-small btn-secondary" onclick="editTask('${task.id}')">✎</button>
                                     <button class="btn-small btn-danger" onclick="deleteTask('${task.id}')">×</button>
                                 </div>
-                                <div class="task-title">${task.title}</div>
+                                <div class="task-title">${task.title} ${hasSubQuests ? `<span style="font-size: 12px; color: var(--text-light);">(${subQuests.length})</span>` : ''}</div>
                             </div>
                             <div class="task-meta">
                                 <span class="task-badge category-badge">${categoryName}</span>
@@ -1867,12 +2130,33 @@
                             </div>
                         </div>
                     </div>
+                    ${subQuestsHtml}
                 `;
             }).join('');
         }
 
         function toggleStrip(element) {
             element.style.height = element.style.height === 'auto' ? '30px' : 'auto';
+        }
+
+        function toggleSubQuests(taskId) {
+            const expandedKey = 'expanded-' + taskId;
+            if (collapsedQuests.has(expandedKey)) {
+                collapsedQuests.delete(expandedKey);
+            } else {
+                collapsedQuests.add(expandedKey);
+            }
+            
+            // Re-render the current active screen
+            const activeScreen = document.querySelector('.screen.active');
+            if (activeScreen) {
+                const screenId = activeScreen.id;
+                if (screenId === 'day-view') {
+                    renderDayView();
+                } else if (screenId === 'quests') {
+                    renderQuests();
+                }
+            }
         }
 
         // ===== REWARDS =====
@@ -2107,9 +2391,7 @@
                 root.style.setProperty('--shadow', '0 2px 8px rgba(255,255,255,0.05)');
                 root.style.setProperty('--gradient-1', 'linear-gradient(90deg, #444444, #666666)');
                 root.style.setProperty('--gradient-2', 'linear-gradient(90deg, #555555, #777777)');
-                root.style.setProperty('--gradient-3', 'linear-gradient(90deg, #333333, #555555)');
                 root.style.setProperty('--gradient-4', 'linear-gradient(90deg, #666666, #888888)');
-                root.style.setProperty('--gradient-5', 'linear-gradient(90deg, #555555, #777777)');
                 
                 document.body.style.background = '#000000';
                 document.body.style.backgroundAttachment = 'fixed';
@@ -2136,9 +2418,7 @@
                 root.style.setProperty('--shadow', '0 4px 12px rgba(255, 107, 157, 0.15)');
                 root.style.setProperty('--gradient-1', 'linear-gradient(135deg, #667EEA 0%, #764BA2 100%)');
                 root.style.setProperty('--gradient-2', 'linear-gradient(135deg, #F093FB 0%, #F5576C 100%)');
-                root.style.setProperty('--gradient-3', 'linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%)');
                 root.style.setProperty('--gradient-4', 'linear-gradient(135deg, #43E97B 0%, #38F9D7 100%)');
-                root.style.setProperty('--gradient-5', 'linear-gradient(135deg, #FA709A 0%, #FEE140 100%)');
                 
                 document.body.style.background = 'linear-gradient(135deg, #FFF8E7 0%, #FFE5F1 50%, #E8F5FF 100%)';
                 document.body.style.backgroundAttachment = 'fixed';
