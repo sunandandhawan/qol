@@ -1786,6 +1786,12 @@
         }
 
         function renderQuests() {
+            // Sync search term with input field value
+            const searchInput = document.getElementById('quest-search');
+            if (searchInput) {
+                questSearchTerm = searchInput.value;
+            }
+            
             // Calculate stats
             const totalQuests = appData.tasks.length;
             
